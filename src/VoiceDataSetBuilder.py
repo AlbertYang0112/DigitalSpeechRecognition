@@ -2,12 +2,14 @@ import os
 from datetime import datetime
 from src.Recorder import Recorder
 import matplotlib.pyplot as plt
+import pyaudio
 
 
 class VoiceDataSetBuilder(Recorder):
 
-    def __init__(self, dst_path, rec_length=2, log_file=None, display=True):
-        super(VoiceDataSetBuilder, self).__init__()
+    def __init__(self, dst_path, rec_length=2, log_file=None, display=True,
+                 chunk=1024, audio_format=pyaudio.paInt16, channels=1, rate=8000):
+        super(VoiceDataSetBuilder, self).__init__(chunk, audio_format, channels, rate)
         if not os.path.isdir(dst_path):
             os.makedirs(dst_path)
         self.PATH = dst_path
