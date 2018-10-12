@@ -6,9 +6,27 @@ import pyaudio
 
 
 class VoiceDataSetBuilder(Recorder):
+    """
+    Build the data set.
+    """
 
     def __init__(self, dst_path, rec_length=2, log_file=None, display=True,
                  chunk=1024, audio_format=pyaudio.paInt16, channels=1, rate=8000):
+        """
+        Initialize the procedure.
+        :param dst_path: the directory to contain the data set.
+                        If the directory do not exist, then the
+                        function will automatically create one
+        :param rec_length: specify the length of wav file
+        :param log_file: the full path to the log file of the data set.
+                        Log format: path label
+                        The path above is relative path
+        :param display: display the wave just recorded if True
+        :param chunk: The same as class Recorder
+        :param audio_format: The same as class Recorder
+        :param channels: The same as class Recorder
+        :param rate: The same as class Recorder
+        """
         super(VoiceDataSetBuilder, self).__init__(chunk, audio_format, channels, rate)
         if not os.path.isdir(dst_path):
             os.makedirs(dst_path)
@@ -34,6 +52,12 @@ class VoiceDataSetBuilder(Recorder):
                 log_file.write(full_filename + ' ' + label + '\n')
 
     def build(self):
+        """
+        Execute the building procedure
+        :return: a tuple. The first element is a list containing
+                all the 1-D-numpy-array wave in the data set, and
+                the second one is a list containing the corresponding label.
+        """
         if self.DISPLAY:
             plt.ion()
             plt.figure(1)

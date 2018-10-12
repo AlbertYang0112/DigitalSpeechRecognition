@@ -4,8 +4,18 @@ import numpy as np
 
 
 class Recorder:
+    """
+    A recorder based on PyAudio.
+    """
 
     def __init__(self, chunk=1024, audio_format=pyaudio.paInt16, channels=1, rate=8000):
+        """
+        The construction function initializes the recorder but does not start the input stream.
+        :param chunk: buffer size
+        :param audio_format: data format
+        :param channels: num of input channel
+        :param rate: sample rate
+        """
         self.CHUNK = chunk
         self.FORMAT = audio_format
         self.CHANNELS = channels
@@ -21,6 +31,12 @@ class Recorder:
         self.stream.stop_stream()
 
     def rec_one_shot(self, sec, file_name=None):
+        """
+        Record a piece of sound.
+        :param sec: durance of recording
+        :param file_name: save the sound to this file. If None is provided then no file is saved.
+        :return: a 1-D numpy array containing the wave
+        """
         self.stream.start_stream()
         frames = []
         for i in range(int(self.RATE / self.CHUNK * sec)):

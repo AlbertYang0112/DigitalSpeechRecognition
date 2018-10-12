@@ -18,12 +18,18 @@ class FileLoader:
         with open(data_list, 'r') as f:
             for line in f.readlines():
                 line = line.strip()
-                filePath, label = line.split(' ')
-                self.__dataset.append((filePath, label))
+                file_path, label = line.split(' ')
+                self.__dataset.append((file_path, label))
         print("Dataset Size:", len(self.__dataset))
         self.__data_pointer = 0
 
     def read_next(self):
+        """
+        Return the next wave array.
+        The function cycles the data set specified in construction function.
+        :return: Return a tuple, consists of a 1-D numpy array containing wave data
+                    and a scalar of ground truth.
+        """
         file_path = self.__dataset[self.__data_pointer][0]
         label = self.__dataset[self.__data_pointer][1]
         with wave.open(file_path, 'rb') as wavFile:
