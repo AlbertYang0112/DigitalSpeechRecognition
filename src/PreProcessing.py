@@ -1,8 +1,8 @@
 # -*- coding:utf-8 -*-
+import wave
 import matplotlib.pyplot as plt
 import numpy as np
-from src.FeatureExtractors import FeatureExtractors
-from src.FileLoader import FileLoader
+import math
 
 '''
 demo:
@@ -14,55 +14,72 @@ test.print_result(filename, frame, energy, zcr, endpoint)
 
 
 class PreProcessing:
-    def __init__(self, frame_size, overlap):
-        self.frame_size = frame_size
+    def __init__(self, framesize, overlap):
+        self.framesize = framesize
         self.overlap = overlap
-        self.loader = FileLoader()
-        plt.ion()
-        plt.figure(2)
 
-    def process(self, file_name):
+    def process(self, filename):
         '''
-        :param file_name: the name of signal file
+        :param filename: the name of signal file
         :return: frame. energy, zcr, endpoint
         '''
-        file_name = file_name.strip()
-        if file_name[-3:] == 'wav':
-            wav_data = self.loader.read_one(file_name)
-            frames = FeatureExtractors.enhance_frame(
-                wav_data=wav_data,
-                frame_size=self.frame_size,
-                overlap=self.overlap,
-                windowing_method='Hamming'
-            )
-            energy = FeatureExtractors.energy(frames)
-            zcr = FeatureExtractors.zero_crossing_rate(frames)
-            endpoint = self.VAD_advance(energy)
-            return wav_data, frames, energy, zcr, endpoint
-        elif file_name[-3:] == 'txt':
-            self.loader.set_data_list(file_name)
-            wav_list = []
-            frame_list = []
-            energy_list = []
-            zcr_list = []
-            endpoint_list = []
-            for i in range(self.loader.data_set_size()):
-                wav_data, _ = self.loader.read_next()
-                frames = FeatureExtractors.enhance_frame(
-                    wav_data=wav_data,
-                    frame_size=self.frame_size,
-                    overlap=self.overlap,
-                    windowing_method='Hamming'
-                )
-                energy = FeatureExtractors.energy(frames)
-                zcr = FeatureExtractors.zero_crossing_rate(frames)
-                endpoint = self.VAD_advance(energy)
-                wav_list.append(wav_data)
-                frame_list.append(frames)
-                energy_list.append(energy)
-                zcr_list.append(zcr)
-                endpoint_list.append(endpoint)
-            return wav_list, frame_list, energy_list, zcr_list, endpoint_list
+        data = self.wavread(filename)
+        frame = self.Enframe(data[0])
+        energy = self.energy(frame)
+        zcr = self.ZCR(frame)
+        endpoint = self.VAD_advance(energy)
+        return frame, energy, zcr, endpoint
+
+    def wavread(self, filename):
+        f = wave.open(filename, 'rb')
+        params = f.getparams()
+        nchannels, sampwidth, framerate, nframes = params[:4]
+        strData = f.readframes(nframes)  # 读取音频，字符串格式
+        waveData = np.fromstring(strData, dtype=np.int16)  # 将字符串转化为int
+        f.close()
+        waveData = waveData * 1.0 / (max(abs(waveData)))  # wave幅值归一化
+        waveData = np.reshape(waveData, [nframes, nchannels]).T
+        return waveData
+
+    def Enframe(self, wavData):  # 分帧加窗函数
+        frameSize, overlap = self.framesize, self.overlap
+        coeff = 0.97  # 预加重系数
+        wlen = len(wavData)
+        step = frameSize - overlap
+        frameNum = int(math.ceil(wlen / step))
+        frameData = np.zeros((frameSize, frameNum))
+
+        hamwin = np.hamming(frameSize)
+
+        for i in range(frameNum):
+            singleFrame = wavData[np.arange(i * step, min(i * step + frameSize, wlen))]
+            singleFrame = np.append(singleFrame[0], singleFrame[:-1] - coeff * singleFrame[1:])  # 预加重
+            frameData[:len(singleFrame), i] = singleFrame
+            frameData[:, i] = hamwin * frameData[:, i]  # 加窗，汉明窗，可以改
+
+        return frameData
+
+    # 计算每一帧的过零率
+    def ZCR(self, frameData):
+        frameNum = frameData.shape[1]  # 获取分帧阵的形态
+        frameSize = frameData.shape[0]
+        zcr = np.zeros((frameNum, 1))  # 设置一个空的矩阵
+
+        for i in range(frameNum):
+            singleFrame = frameData[:, i]  # 分别对每一帧内的数据进行操作
+            temp = singleFrame[:frameSize - 1] * singleFrame[1:frameSize]  # 对相邻的位进行相乘操作
+            temp = np.sign(temp)  # 将结果转化为符号
+            zcr[i] = np.sum(temp < 0)  # 将负数个数求总数
+        return zcr
+
+    # 计算每一帧能量
+    def energy(self, frameData):
+        frameNum = frameData.shape[1]
+        ener = np.zeros((frameNum, 1))
+        for i in range(frameNum):
+            singleframe = frameData[:, i]
+            ener[i] = sum(singleframe * singleframe)
+        return ener
 
     # 新增的利用双门限法的语音端点检测
     # 增强了识别能力，可以用于多数字的语音信息的断点识别
@@ -104,6 +121,7 @@ class PreProcessing:
                 i += 1
             j += 1
         counter = 2
+        temp = 0
         i = 2
         while i < len(Endpoint) - 2:  # 消除重复点
             if Endpoint[i] != Endpoint[i - 2]:
@@ -111,8 +129,6 @@ class PreProcessing:
                 counter += 1
             i += 1
         endpoint = []
-        if len(Endpoint) == 0:
-            return endpoint
         for i in range(counter):
             endpoint.append(Endpoint[i])
         return endpoint
@@ -126,6 +142,18 @@ class PreProcessing:
         :param endpoint: the endpoint of the signal judged by energy
         :return: none
         '''
+        data = self.wavread(filename)
+        plt.figure(1)
+        # plot the voice data
+        plt.subplot(221)
+        plt.grid('on')
+        plt.plot(data[0])
+        plt.axvline(endpoint[0] * (512 - 128), color='r')
+        plt.axvline(endpoint[1] * (512 - 128), color='r')
+        plt.xlabel("Time(s)")
+        plt.ylabel("Amplitude")
+        plt.title("Signal")
+
         # plot the result of enframe
         plt.subplot(222)
         plt.grid('on')
