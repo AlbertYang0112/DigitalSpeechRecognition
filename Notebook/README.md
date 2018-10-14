@@ -1,4 +1,4 @@
-#iPython Notebook for Experiment
+# iPython Notebook for Experiment
 This is folder for ipython notebook.
-##prerequisite
+## prerequisite
 jupyter notebook
