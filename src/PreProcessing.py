@@ -128,10 +128,14 @@ class PreProcessing:
                 Endpoint[counter] = Endpoint[i]
                 counter += 1
             i += 1
-        endpoint = []
-        for i in range(counter):
-            endpoint.append(Endpoint[i])
-        return endpoint
+        if len(Endpoint) == 0:
+            print("No active voice detected")
+            return 0
+        else:
+            endpoint = []
+            for i in range(counter):
+                endpoint.append(Endpoint[i])
+            return endpoint
 
     def print_result(self, filename, frame, energy, zcr, endpoint):
         '''
