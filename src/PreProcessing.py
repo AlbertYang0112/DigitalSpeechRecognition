@@ -82,6 +82,10 @@ class PreProcessing:
                     Flag2 = 1  # 状态位置于一
         i = 0
         j = 0
+        if len(Data2) == 0:
+            print("No active voice detected")
+            return []
+        
         while j < len(Data2) / 2:  # 循环遍历数据点，筛选有效的节点
             i = 0
             while i < len(Data1) / 2:
@@ -101,7 +105,7 @@ class PreProcessing:
             i += 1
         if len(Endpoint) == 0:
             print("No active voice detected")
-            return 0
+            return []
         else:
             endpoint = []
             for i in range(counter):
