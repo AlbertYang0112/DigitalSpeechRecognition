@@ -133,9 +133,9 @@ class PreProcessing:
         data_set = []
         for i in range(len(data)):
             new_shape = np.linspace(0, len(data[i]), shape)
-            data = np.reshape(data[i], len(data[i]))
+            Data = np.reshape(data[i], len(data[i]))
             x = np.linspace(0, len(data[i]), len(data[i]))
-            f = interpolate.interp1d(x, data, kind='cubic')
+            f = interpolate.interp1d(x, Data, kind='cubic')
             data_set.append(f(new_shape))
         return data_set
 
