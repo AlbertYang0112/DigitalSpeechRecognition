@@ -1,6 +1,8 @@
 # -*- coding:utf-8 -*-
 import matplotlib.pyplot as plt
 import numpy as np
+from src.FileLoader import FileLoader
+from src.FeatureExtractors import FeatureExtractors
 
 
 class PreProcessing:
