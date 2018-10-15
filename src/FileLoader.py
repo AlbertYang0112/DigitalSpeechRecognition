@@ -53,8 +53,7 @@ class FileLoader:
             channels, sample_width, frame_rate, frame_num = params[:4]
             str_data = wavFile.readframes(frame_num)
             wav_data = np.fromstring(str_data, dtype=np.int16)
-            wav_min, wav_max = np.min(wav_data), np.max(wav_data)
-            wav_data = (wav_data - wav_min) * 1.0 / (1 + wav_max - wav_min)   # Normalize the wave
+            wav_data = wav_data * 1.0 / np.max(np.abs(wav_data))
             wav_data = np.where(np.abs(wav_data) < self.MUTE_LIMIT,
                                 0, wav_data)
 
@@ -71,8 +70,7 @@ class FileLoader:
             channels, sample_width, frame_rate, frame_num = params[:4]
             str_data = wavFile.readframes(frame_num)
             wav_data = np.fromstring(str_data, dtype=np.int16)
-            wav_min, wav_max = np.min(wav_data), np.max(wav_data)
-            wav_data = (wav_data - wav_min) * 1.0 / (1 + wav_max - wav_min)   # Normalize the wave
+            wav_data = wav_data * 1.0 / np.max(np.abs(wav_data))
             wav_data = np.where(np.abs(wav_data) < self.MUTE_LIMIT,
                                 0, wav_data)
 
