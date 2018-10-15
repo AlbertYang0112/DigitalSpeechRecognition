@@ -63,6 +63,7 @@ class PreProcessing:
         Endpoint = []  # 存放两个节点
         Flag = 1  # 状态位
         Flag2 = 1  # 状态位
+        i = 1
         if energy[i-1] > Low:
             Data1.append(i-1)
             Flag = 0
