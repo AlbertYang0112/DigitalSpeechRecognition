@@ -1,4 +1,8 @@
 import unittest
+import sys
+import os
+lib_path = os.path.abspath(os.path.join(sys.path[0], '..'))
+sys.path.append(lib_path)
 from src.FileLoader import *
 from src.VoiceDataSetBuilder import *
 

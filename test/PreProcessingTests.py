@@ -1,7 +1,12 @@
 import unittest
+import sys
+import os
+lib_path = os.path.abspath(os.path.join(sys.path[0], '..'))
+sys.path.append(lib_path)
 from src.PreProcessing import *
 from src.VoiceDataSetBuilder import *
 import matplotlib.pyplot as plt
+
 
 class PreProcessingTests(unittest.TestCase):
 
@@ -22,7 +27,7 @@ class PreProcessingTests(unittest.TestCase):
             self.pre_process.process(self.LOG)
         for i in range(len(frame_list)):
             wav_data = wav_list[i]
-            print(np.max(wav_data))
+            print(np.max(np.abs(wav_data)))
             frames = frame_list[i]
             energys = energy_list[i]
             zcrs = zcr_list[i]
@@ -32,7 +37,7 @@ class PreProcessingTests(unittest.TestCase):
             plt.plot(wav_data)
             print(endpoints)
             for ep in endpoints:
-                plt.axvline(ep, color='r')
+                plt.axvline(ep * (self.pre_process.frame_size - self.pre_process.overlap), color='r')
             plt.subplot(222)
             plt.plot(energys)
             plt.subplot(223)
@@ -49,6 +54,7 @@ class PreProcessingTests(unittest.TestCase):
             os.removedirs(self.DATA_DIR)
         if os.path.exists(self.LOG):
             os.remove(self.LOG)
+
 
 if __name__ == '__main__':
     #unittest.main()
