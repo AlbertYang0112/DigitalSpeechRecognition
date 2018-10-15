@@ -21,6 +21,13 @@ class SVM_Classifier:
         self.clf = svm.SVC(C=0.8, kernel='rbf', gamma=20, decision_function_shape='ovr')
 
     def read_data(self, DataListName, FeatureName,shape):
+        '''
+        Load original data and the feature that you choose to use is needed
+        You can choose different output shape.
+        :DataListName: The log.txt path
+        :FeatureName: The name of the feature that you choose to use
+        :shape: The output shape that you prefer
+        '''
         Feature = FeatureName.capitalize()
         Data = np.zeros((1,shape))
         Label = []
@@ -50,9 +57,18 @@ class SVM_Classifier:
             return Data, Label
         
     def train(self, Data, Label):
+        '''
+        Train SVM model
+        Feature data and labels are needed
+        '''
         clf = self.clf
         x_train = Data
         y_train = Label
+        '''
+        The database is not big enough to be splited.
+        When database is big enougth you can choose to split original database
+        and set validation data.
+        '''
         #x_train, x_test, y_train, y_test = train_test_split(Data, Label, random_state=1, train_size=0.8)
         clf.fit(x_train, y_train)  # svm classification
         print("training result")
@@ -64,6 +80,9 @@ class SVM_Classifier:
         joblib.dump(clf, "train_model.m")
     
     def apply(self, Data):
+        '''
+        Apply a model to predict
+        '''
         clf = self.clf
         clf = joblib.load("train_model.m")
         return clf.predict(Data)
