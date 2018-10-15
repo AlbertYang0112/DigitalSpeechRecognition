@@ -63,32 +63,36 @@ class PreProcessing:
         Endpoint = []  # 存放两个节点
         Flag = 1  # 状态位
         Flag2 = 1  # 状态位
-        for i in range(len(energy)):
-            if energy[i] > Low and Flag == 1:  # 当能量高于低阈值时
-                if energy[i - 1] < Low:  # 如果上一帧的能量低于低阈值
-                    Data1.append(i - 1)  # 将此节点记录下来
-                    Flag = 0  # 状态位置零
-            if energy[i] > High and Flag2 == 1:  # 当能量高于高阈值时
-                if energy[i - 1] < High:  # 如果上一帧的能量低于高阈值
-                    Data2.append(i - 1)  # 将此节点记录下来
-                    Flag2 = 0  # 状态位置零
-            if energy[i] < Low and Flag == 0:  # 当能量低于低阈值时
-                if energy[i - 1] > Low:  # 如果上一帧能量高于低阈值
-                    Data1.append(i)  # 将此节点记录下来
-                    Flag = 1  # 状态位置一
-            if energy[i] < High and Flag2 == 0:  # 当能量低于高阈值时
-                if energy[i - 1] > High:  # 如果上一帧能量高于高阈值
-                    Data2.append(i)  # 将此节点记录下来
-                    Flag2 = 1  # 状态位置于一
+        if energy[i-1] > Low:
+            Data1.append(i-1)
+            Flag = 0
+        while i < len(energy):
+            if energy[i] > Low and Flag == 1: #当能量高于低阈值时
+                if energy[i-1] < Low: #如果上一帧的能量低于低阈值
+                    Data1.append(i-1) #将此节点记录下来
+                    Flag = 0 #状态位置零
+            if energy[i] > High and Flag2 == 1: #当能量高于高阈值时
+                if energy[i-1] < High: #如果上一帧的能量低于高阈值
+                    Data2.append(i-1) #将此节点记录下来
+                    Flag2 = 0 #状态位置零
+            if energy[i] < Low and Flag == 0: #当能量低于低阈值时
+                if energy[i-1] > Low: #如果上一帧能量高于低阈值
+                    Data1.append(i-1) #将此节点记录下来
+                    Flag = 1 #状态位置一
+            if energy[i] < High and Flag2 == 0: #当能量低于高阈值时
+                if energy[i-1] > High: #如果上一帧能量高于高阈值
+                    Data2.append(i-1) #将此节点记录下来
+                    Flag2 = 1 #状态位置于一
+            i += 1
         i = 0
         j = 0
         if len(Data2) == 0:
             print("No active voice detected")
             return []
         
-        while j < len(Data2) / 2:  # 循环遍历数据点，筛选有效的节点
+        while j < int(len(Data2) / 2):  # 循环遍历数据点，筛选有效的节点
             i = 0
-            while i < len(Data1) / 2:
+            while i < int(len(Data1) / 2):
                 if Data1[2 * i] <= Data2[2 * j] and Data1[2 * i + 1] >= Data2[2 * j + 1]:
                     Endpoint.append(Data1[2 * i])
                     Endpoint.append(Data1[2 * i + 1])
