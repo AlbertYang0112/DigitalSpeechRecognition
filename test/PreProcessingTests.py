@@ -32,6 +32,7 @@ class PreProcessingTests(unittest.TestCase):
             energys = energy_list[i]
             zcrs = zcr_list[i]
             endpoints = endpoint_list[i]
+            effective_es = PreProcessing.effective_feature(zcrs, endpoints)
             plt.figure(i + 1)
             plt.subplot(221)
             plt.plot(wav_data)
@@ -40,10 +41,18 @@ class PreProcessingTests(unittest.TestCase):
                 plt.axvline(ep * (self.pre_process.frame_size - self.pre_process.overlap), color='r')
             plt.subplot(222)
             plt.plot(energys)
+            for ep in endpoints:
+                plt.axvline(ep, color='r')
             plt.subplot(223)
-            plt.plot(frames[0])
+            longest_e = []
+            for e in effective_es:
+                if len(e) > len(longest_e):
+                    longest_e = e
+            plt.plot(longest_e)
             plt.subplot(224)
             plt.plot(zcrs)
+            for ep in endpoints:
+                plt.axvline(ep, color='r')
             plt.show()
             plt.waitforbuttonpress()
 

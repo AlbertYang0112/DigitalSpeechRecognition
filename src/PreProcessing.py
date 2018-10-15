@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from src.FileLoader import FileLoader
 from src.FeatureExtractors import FeatureExtractors
+from scipy import interpolate
 
 
 class PreProcessing:
@@ -116,6 +117,27 @@ class PreProcessing:
             for i in range(counter):
                 endpoint.append(Endpoint[i])
             return endpoint
+
+    @staticmethod
+    def effective_feature(features, endpoints):
+        print(features.shape)
+        feature_list = []
+        segment_num = int(len(endpoints) / 2)
+        for i in range(segment_num):
+            start, end = endpoints[2 * i], endpoints[2 * i + 1]
+            feature_list.append(features[start: end])
+        return feature_list
+
+    @staticmethod
+    def reshape(data, shape):
+        data_set = []
+        for i in range(len(data)):
+            new_shape = np.linspace(0, len(data[i]), shape)
+            data = np.reshape(data[i], len(data[i]))
+            x = np.linspace(0, len(data[i]), len(data[i]))
+            f = interpolate.interp1d(x, data, kind='cubic')
+            data_set.append(f(new_shape))
+        return data_set
 
     def print_result(self, filename, frame, energy, zcr, endpoint):
         '''
