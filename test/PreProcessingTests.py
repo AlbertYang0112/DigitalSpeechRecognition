@@ -66,9 +66,6 @@ class PreProcessingTests(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    #unittest.main()
-    a = PreProcessingTests()
-    a.test_all()
-
-
-
+    unittest.main()
+    #a = PreProcessingTests()
+    #a.test_all()
