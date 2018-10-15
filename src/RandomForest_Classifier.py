@@ -14,7 +14,7 @@ from sklearn.model_selection import train_test_split
 
 class RandomForest_Classifier:
     '''
-    This is the SVM_Classifier of different voice information.
+    This is the RandomForest_Classifier of different voice information.
     We try to utilized multiple methods to actualize the classification task
     and this is one of them.
     '''
@@ -61,7 +61,7 @@ class RandomForest_Classifier:
 
     def train(self, Data, Label):
         '''
-        Train SVM model
+        Train RandomForest model
         Feature data and labels are needed
         '''
         shape = Data.shape[1]
