@@ -35,8 +35,9 @@ class PreProcessing:
             energy_list = []
             zcr_list = []
             endpoint_list = []
+            label_list = []
             for i in range(self.loader.data_set_size()):
-                wav_data, _ = self.loader.read_next()
+                wav_data, label = self.loader.read_next()
                 frames = FeatureExtractors.enhance_frame(
                     wav_data=wav_data,
                     frame_size=self.frame_size,
@@ -46,19 +47,22 @@ class PreProcessing:
                 energy = FeatureExtractors.energy(frames)
                 zcr = FeatureExtractors.zero_crossing_rate(frames)
                 endpoint = self.VAD_advance(energy)
+                zcr = np.reshape(zcr, [len(zcr)])
+                endpoint = np.reshape(endpoint, [len(endpoint)])
                 wav_list.append(wav_data)
                 frame_list.append(frames)
                 energy_list.append(energy)
+                label_list.append(label)
                 zcr_list.append(zcr)
                 endpoint_list.append(endpoint)
-            return wav_list, frame_list, energy_list, zcr_list, endpoint_list
+            return wav_list, frame_list, energy_list, zcr_list, endpoint_list, label_list
 
     # 新增的利用双门限法的语音端点检测
     # 增强了识别能力，可以用于多数字的语音信息的断点识别
     def VAD_advance(self, energy):
         MEAN = np.sum(energy) / len(energy)
         High = 0.8 * MEAN  # 语音能量上限
-        Low = 0.015 * MEAN  # 能量下限
+        Low = 0.02 * MEAN  # 能量下限
         Data1 = []  # 存放低位能量数据
         Data2 = []  # 存放高位能量数据
         Endpoint = []  # 存放两个节点
@@ -120,21 +124,23 @@ class PreProcessing:
 
     @staticmethod
     def effective_feature(features, endpoints):
-        print(features.shape)
         feature_list = []
         segment_num = int(len(endpoints) / 2)
         for i in range(segment_num):
-            start, end = endpoints[2 * i], endpoints[2 * i + 1]
+            start, end = int(endpoints[2 * i]), int(endpoints[2 * i + 1])
             feature_list.append(features[start: end])
         return feature_list
 
     @staticmethod
-    def reshape(data, shape):
+    def reshape(Data, shape):
         data_set = []
-        for i in range(len(data)):
-            new_shape = np.linspace(0, len(data[i]), shape)
-            data = np.reshape(data[i], len(data[i]))
-            x = np.linspace(0, len(data[i]), len(data[i]))
+        for i in range(len(Data)):
+            index = len(Data[i])
+            if index < 5:
+                continue
+            new_shape = np.linspace(0, index, shape)
+            data = np.reshape(Data[i], index)
+            x = np.linspace(0, index, index)
             f = interpolate.interp1d(x, data, kind='cubic')
             data_set.append(f(new_shape))
         return data_set

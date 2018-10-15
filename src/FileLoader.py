@@ -57,7 +57,7 @@ class FileLoader:
             wav_data = np.where(np.abs(wav_data) < self.MUTE_LIMIT,
                                 0, wav_data)
 
-        if self.__data_pointer >= len(self.__dataset):
+        if self.__data_pointer > len(self.__dataset):
             self.__data_pointer = 0
         else:
             self.__data_pointer += 1
