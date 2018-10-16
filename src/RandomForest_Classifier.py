@@ -32,7 +32,7 @@ class RandomForest_Classifier:
         :shape: The output shape that you prefer
         '''
         Feature = FeatureName.capitalize()
-        Data = np.zeros((1, shape))
+        Data = np.zeros((1,shape))
         Label = []
         processer = PreProcessing(512, 128)
         wav_list, frame_list, energy_list, zcr_list, endpoint_list, Label = processer.process(DataListName)
@@ -40,14 +40,20 @@ class RandomForest_Classifier:
             for i in range(len(zcr_list)):
                 temp = processer.effective_feature(energy_list[i], endpoint_list[i])
                 temp = processer.reshape(temp, shape)
-                Data = np.concatenate((Data, temp), axis=0)
+                if len(temp) == 0:
+                    Label = Label[0:i-1]+Label[i:]
+                    continue
+                Data=np.concatenate((Data,temp),axis = 0)
             Data = Data[1:]
             return Data, Label
         elif Feature[0] == 'Z':
             for i in range(len(zcr_list)):
                 temp = processer.effective_feature(zcr_list[i], endpoint_list[i])
                 temp = processer.reshape(temp, shape)
-                Data = np.concatenate((Data, temp), axis=0)
+                if len(temp) == 0:
+                    Label = Label[0:i-1]+Label[i:]
+                    continue
+                Data=np.concatenate((Data,temp),axis = 0)
             Data = Data[1:]
             return Data, Label
         else:
@@ -55,7 +61,10 @@ class RandomForest_Classifier:
             for i in range(len(zcr_list)):
                 temp = processer.effective_feature(zcr_list[i], endpoint_list[i])
                 temp = processer.reshape(temp, shape)
-                Data = np.concatenate((Data, temp), axis=0)
+                if len(temp) == 0:
+                    Label = Label[0:i-1]+Label[i:]
+                    continue
+                Data=np.concatenate((Data,temp),axis = 0)
             Data = Data[1:]
             return Data, Label
 
@@ -67,28 +76,28 @@ class RandomForest_Classifier:
         shape = Data.shape[1]
         clf = RandomForestClassifier(n_estimators=shape, max_depth=None,
      min_samples_split=2, random_state=0)
-        x_train = Data
-        y_train = Label
+        #x_train = Data
+        #y_train = Label
         '''
         The database is not big enough to be splited.
         When database is big enougth you can choose to split original database
         and set validation data.
         '''
-        # x_train, x_test, y_train, y_test = train_test_split(Data, Label, random_state=1, train_size=0.8)
+        x_train, x_test, y_train, y_test = train_test_split(Data, Label, random_state=1, train_size=0.8)
         clf.fit(x_train, y_train)  # svm classification
         print("training result")
         print(clf.score(x_train, y_train))  # svm score
         y_hat = clf.predict(x_train)
         print("validating result")
-        # print(clf.score(x_test, y_test))
+        print(clf.score(x_test, y_test))
         # y_hat = clf.predict(x_test)
-        joblib.dump(clf, "train_model.m")
+        joblib.dump(clf, "Randomforest_train_model.m")
 
     def apply(self, Data):
         '''
         Apply a model to predict
         '''
-        clf = joblib.load("train_model.m")
+        clf = joblib.load("Randomftrain_model.m")
         return clf.predict(Data)
 
     def show_accuracy(self, y_pre, y_true, Signal):

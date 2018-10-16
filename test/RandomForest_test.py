@@ -14,8 +14,4 @@ foldername = '../DataSet/DataList.txt'
 
 Classifier = RandomForest_Classifier(foldername)
 Data, Label = Classifier.read_data(foldername, 'zcr', 25)
-print(np.shape(Data))
-print(Label)
 Classifier.train(Data, Label)
-print(Classifier.apply(Data))
-print(Label)
