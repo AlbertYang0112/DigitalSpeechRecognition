@@ -13,9 +13,5 @@ Please speak loudly in a quiet place when you build the database.
 foldername = '../DataSet/DataList.txt' 
 
 Classifier = SVM_Classifier(foldername)
-Data, Label = Classifier.read_data(foldername, 'zcr',25)
-print(np.shape(Data))
-print(Label)
+Data, Label = Classifier.read_data(foldername, 'zcr',100)
 Classifier.train(Data, Label)
-print(Classifier.apply(Data))
-print(Label)

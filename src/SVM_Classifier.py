@@ -70,21 +70,21 @@ class SVM_Classifier:
         Train SVM model
         Feature data and labels are needed
         '''
-        clf = svm.SVC(C=0.8, kernel='rbf', gamma=20, decision_function_shape='ovr')
-        x_train = Data
-        y_train = Label
+        clf = svm.SVC(C=0.5, kernel='linear', gamma=10, decision_function_shape='ovr')
+        #x_train = Data
+        #y_train = Label
         '''
         The database is not big enough to be splited.
         When database is big enougth you can choose to split original database
         and set validation data.
         '''
-        #x_train, x_test, y_train, y_test = train_test_split(Data, Label, random_state=1, train_size=0.8)
+        x_train, x_test, y_train, y_test = train_test_split(Data, Label, train_size=0.75)
         clf.fit(x_train, y_train)  # svm classification
         print("training result")
         print(clf.score(x_train, y_train))  # svm score
         y_hat = clf.predict(x_train)
         print("validating result")
-        #print(clf.score(x_test, y_test))
+        print(clf.score(x_test, y_test))
         #y_hat = clf.predict(x_test)
         joblib.dump(clf, "train_model.m")
     
