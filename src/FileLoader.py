@@ -31,6 +31,8 @@ class FileLoader:
         with open(data_list, 'r') as f:
             for line in f.readlines():
                 line = line.strip()
+                if len(line) == 0:
+                    continue
                 file_path, label = line.split(' ')
                 self.__dataset.append((file_path, label))
                 self.__size += 1
