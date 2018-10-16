@@ -75,7 +75,7 @@ class RandomForest_Classifier:
         '''
         shape = Data.shape[1]
         clf = RandomForestClassifier(n_estimators=shape, max_depth=None,
-     min_samples_split=2, random_state=0)
+     min_samples_split=3, random_state=1)
         #x_train = Data
         #y_train = Label
         '''
@@ -83,7 +83,7 @@ class RandomForest_Classifier:
         When database is big enougth you can choose to split original database
         and set validation data.
         '''
-        x_train, x_test, y_train, y_test = train_test_split(Data, Label, random_state=1, train_size=0.8)
+        x_train, x_test, y_train, y_test = train_test_split(Data, Label, random_state=0, train_size=0.8)
         clf.fit(x_train, y_train)  # svm classification
         print("training result")
         print(clf.score(x_train, y_train))  # svm score
