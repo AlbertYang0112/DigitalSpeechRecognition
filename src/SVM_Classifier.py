@@ -44,6 +44,9 @@ class SVM_Classifier:
             for i in range(len(zcr_list)):
                 temp = processer.effective_feature(zcr_list[i], endpoint_list[i])
                 temp = processer.reshape(temp, shape)
+                if len(temp) == 0:
+                    Label = Label[0:i-1]+Label[i:]
+                    continue
                 Data=np.concatenate((Data,temp),axis = 0)
             Data = Data[1:]
             return Data, Label

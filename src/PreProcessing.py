@@ -61,7 +61,7 @@ class PreProcessing:
     # 增强了识别能力，可以用于多数字的语音信息的断点识别
     def VAD_advance(self, energy):
         MEAN = np.sum(energy) / len(energy)
-        High = 0.8 * MEAN  # 语音能量上限
+        High = 0.4 * MEAN  # 语音能量上限
         Low = 0.02 * MEAN  # 能量下限
         Data1 = []  # 存放低位能量数据
         Data2 = []  # 存放高位能量数据
