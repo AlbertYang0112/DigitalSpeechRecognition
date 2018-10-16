@@ -8,4 +8,6 @@ from src.VoiceDataSetBuilder import *
 
 if __name__ == '__main__':
     voicedatasetbuilder = VoiceDataSetBuilder(dst_path='../DataSet/syk', log_file='../DataSet/DataList_syk.txt')
+
     voicedatasetbuilder.build()
+
