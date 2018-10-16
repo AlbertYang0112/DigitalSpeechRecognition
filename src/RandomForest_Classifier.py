@@ -97,7 +97,7 @@ class RandomForest_Classifier:
         '''
         Apply a model to predict
         '''
-        clf = joblib.load("Randomftrain_model.m")
+        clf = joblib.load("Randomforest_train_model.m")
         return clf.predict(Data)
 
     def show_accuracy(self, y_pre, y_true, Signal):
