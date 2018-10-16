@@ -12,6 +12,12 @@ Please speak loudly in a quiet place when you build the database.
 
 foldername = '../DataSet/DataList.txt'
 
+'''
+The performance of randomforest is worse than svm
+When we choose to use zcr, the validating result is around 45%
+and if we switch it to energy, the validating result is around 40%
+'''
+
 Classifier = RandomForest_Classifier(foldername)
-Data, Label = Classifier.read_data(foldername, 'zcr', 25)
+Data, Label = Classifier.read_data(foldername, 'zcr', 15)
 Classifier.train(Data, Label)

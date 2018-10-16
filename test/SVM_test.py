@@ -12,6 +12,12 @@ Please speak loudly in a quiet place when you build the database.
 
 foldername = '../DataSet/DataList.txt' 
 
+'''
+the performance in zcr is much better than energy
+the validating result of zcr can reach 50% but result of energy can only reach 46% with
+low training score around 75%.
+'''
+
 Classifier = SVM_Classifier(foldername)
-Data, Label = Classifier.read_data(foldername, 'zcr',100)
+Data, Label = Classifier.read_data(foldername, 'zcr',15)
 Classifier.train(Data, Label)
