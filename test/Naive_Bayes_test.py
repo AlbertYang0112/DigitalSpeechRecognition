@@ -16,7 +16,7 @@ foldername = '../DataSet/DataList.txt'
 This is the demo of naive bayes classifier which seems to be a little 
 complex and you can choose three different Naive Bayes Classifier by changing 
 the parameter 'Type'.
-The statictic parameter of NB clf can be adjusted in the 'Naive_Bayes_Classifier'.
+The statistic parameter of NB clf can be adjusted in the 'Naive_Bayes_Classifier'.
 '''
 
 Classifier = Naive_Bayes_Classifier(foldername, 'G')
