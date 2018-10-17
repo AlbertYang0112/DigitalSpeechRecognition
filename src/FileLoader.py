@@ -1,5 +1,7 @@
 import wave
 import numpy as np
+import os
+import sys
 
 
 class FileLoader:
@@ -15,6 +17,8 @@ class FileLoader:
         self.MUTE_LIMIT = 0.05  # Any signal below this threshold will be ignored
         self.__dataset = None
         self.__size = 0
+        self.local_path = os.path.abspath(sys.path[0])
+        print(self.local_path)
         self.set_data_list(data_list)
         self.__data_pointer = 0
 
@@ -26,6 +30,7 @@ class FileLoader:
         if data_list is None:
             self.__dataset = None
             return
+        data_list = os.path.join(self.local_path, data_list)
         self.__dataset = []
         self.__size = 0
         with open(data_list, 'r') as f:
