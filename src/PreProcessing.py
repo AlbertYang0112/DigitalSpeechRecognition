@@ -7,6 +7,8 @@ from scipy import interpolate
 
 
 class PreProcessing:
+    # Todo: Add the data argumentation methods.
+    # Todo: Add the stream supporting methods.
     def __init__(self, frame_size, overlap):
         self.frame_size = frame_size
         self.overlap = overlap
@@ -57,6 +59,7 @@ class PreProcessing:
                 endpoint_list.append(endpoint)
             return wav_list, frame_list, energy_list, zcr_list, endpoint_list, label_list
 
+    # Todo: Remove Chinese comments.
     # 新增的利用双门限法的语音端点检测
     # 增强了识别能力，可以用于多数字的语音信息的断点识别
     def VAD_advance(self, energy):
@@ -146,6 +149,7 @@ class PreProcessing:
         return data_set
 
     def print_result(self, filename, frame, energy, zcr, endpoint):
+        # Todo: Format the method.
         '''
         :param filename: file name of the signal
         :param frame: result of enframe

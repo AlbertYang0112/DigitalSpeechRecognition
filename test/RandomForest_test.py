@@ -2,7 +2,7 @@ import sys
 import os
 lib_path = os.path.abspath(os.path.join(sys.path[0], '..'))
 sys.path.append(lib_path)
-from src.RandomForest_Classifier import *
+from src.Classifier.RandomForest_Classifier import *
 
 '''
 Prerequisite: Database should be built before running demo.

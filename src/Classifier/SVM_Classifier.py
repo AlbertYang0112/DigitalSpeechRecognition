@@ -11,16 +11,17 @@ from sklearn.externals import joblib
 from sklearn.model_selection import train_test_split
 
 class SVM_Classifier:
+    # Todo: Inherit the abstract class.
     '''
     This is the SVM_Classifier of different voice information.
     We try to utilized multiple methods to actualize the classification task
     and this is one of them.
     '''
     def __init__(self, DataListName):
-        self.DataListName = '../DataSet/DataList.txt'
-
+        self.DataListName = DataListName
 
     def read_data(self, DataListName, FeatureName,shape):
+        # Todo: Remove the read_data method.
         '''
         Load original data and the feature that you choose to use is needed
         You can choose different output shape.
@@ -66,6 +67,7 @@ class SVM_Classifier:
             return Data, Label
         
     def train(self, Data, Label):
+        # Todo: Specify the model dump location.
         '''
         Train SVM model
         Feature data and labels are needed
@@ -80,10 +82,10 @@ class SVM_Classifier:
         '''
         x_train, x_test, y_train, y_test = train_test_split(Data, Label, train_size=0.66, random_state = 2)
         clf.fit(x_train, y_train)  # svm classification
-        print("training result")
-        print(clf.score(x_train, y_train))  # svm score
+        #print("training result")
+        #print(clf.score(x_train, y_train))  # svm score
         y_hat = clf.predict(x_train)
-        print("validating result")
+        #print("validating result")
         print(clf.score(x_test, y_test))
         #y_hat = clf.predict(x_test)
         joblib.dump(clf, "train_model.m")
