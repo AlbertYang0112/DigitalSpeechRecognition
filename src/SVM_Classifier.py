@@ -75,7 +75,7 @@ class SVM_Classifier:
         #y_train = Label
         '''
         The database is not big enough to be splited.
-        When database is big enougth you can choose to split original database
+        When database is big enough you can choose to split original database
         and set validation data.
         '''
         x_train, x_test, y_train, y_test = train_test_split(Data, Label, train_size=0.66, random_state = 2)

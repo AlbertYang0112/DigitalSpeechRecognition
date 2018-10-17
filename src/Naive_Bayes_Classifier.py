@@ -77,8 +77,8 @@ class Naive_Bayes_Classifier:
         There are three different models in this class.
         You can choose different type of naive bayes classifier by adjusting parameter 'Type'
         Feature data and labels are needed.
-        There are some bugs meet in the MultibnomialNB and it seems that this clf and BernoulliNB 
-        is not suitable in voice classification task. THe GaussianNB is much better than BernoulliNB.
+        There are some bugs met in the MultibnomialNB and it seems that this clf and BernoulliNB 
+        is not suitable in voice classification task. The GaussianNB is much better than BernoulliNB.
         '''
         if self.Type[0] == 'G':
             print('G')
