@@ -3,4 +3,5 @@ __all__ = [
     'Naive_Bayes_Classifier',
     'RandomForest_Classifier',
     'SVM_Classifier'
+    'CNN_Classifier'
 ]
