@@ -18,7 +18,7 @@ class Naive_Bayes_Classifier:
     and this is one of them.
     '''
 
-    def __init__(self, DataListName, Type):
+    def __init__(self, DataListName, Type='G'):
         '''
         The type of classifier should be choosed.
         '''
