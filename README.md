@@ -13,6 +13,8 @@ Digital Signal Processing Project.
  - Wave
  - PyAudio
  - Matplotlib
+ - Keras 2.1
+ - Tensorboard
  
 ## Tool Box:
  - Run
