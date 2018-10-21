@@ -3,6 +3,7 @@ import os
 lib_path = os.path.abspath(os.path.join(sys.path[0], '..'))
 sys.path.append(lib_path)
 from src.Classifier.CNN_Classifier import *
+from keras.models import Model
 
 '''
 This is the demo program of cnn classifier.
@@ -31,9 +32,9 @@ shape = 290
 batch_size = 200
 nb_classes = 10
 epochs = 1000
-pool_size = 10
+pool_size = 3
 nb_filters = 50
-kernel_size = 10
+kernel_size = 3
 
 foldername = '../DataSet/DataList.txt' 
 '''
@@ -44,7 +45,8 @@ training process and the structure of this cnn.
 log_dir = './tmp/log'
 
 Classifier = CNN_Classifier(foldername)
-Data, Label = Classifier.read_data(foldername, 'zcr', shape)
+Data, Label = Classifier.read_data(foldername, 'w', shape)
 X_train, X_test, Y_train, Y_test, input_shape = Classifier.data_processer(Data, Label, shape, nb_classes)
 model = Classifier.cnn_model(input_shape, pool_size, nb_filters, kernel_size, nb_classes)
 Classifier.train(model, X_train, X_test, Y_train, Y_test, nb_classes, epochs, batch_size, log_dir)
+Classifier.get_mid_data(model)

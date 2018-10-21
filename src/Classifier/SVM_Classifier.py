@@ -8,7 +8,7 @@ from src.VoiceDataSetBuilder import *
 from src.FileLoader import *
 import matplotlib.pyplot as plt
 from sklearn.externals import joblib
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import *
 
 class SVM_Classifier:
     # Todo: Inherit the abstract class.
@@ -31,6 +31,8 @@ class SVM_Classifier:
         '''
         Feature = FeatureName.capitalize()
         Data = np.zeros((1,shape))
+        zcrdata = np.zeros((1,shape))
+        energydata = np.zeros((1,shape))
         Label = []
         processer = PreProcessing(512, 128)
         wav_list, frame_list, energy_list, zcr_list, endpoint_list, Label = processer.process(DataListName)
@@ -54,6 +56,25 @@ class SVM_Classifier:
                 Data=np.concatenate((Data,temp),axis = 0)
             Data = Data[1:]
             return Data, Label
+        elif Feature[0] == 'W':
+            for i in range(len(zcr_list)):
+                temp = processer.effective_feature(zcr_list[i], endpoint_list[i])
+                temp = processer.reshape(temp, shape)
+                if len(temp) == 0:
+                    Label = Label[0:i-1]+Label[i:]
+                    continue
+                zcrdata = np.concatenate((zcrdata,temp),axis = 0)
+            zcrdata = zcrdata[1:]
+            print(np.shape(zcrdata))
+            for i in range(len(zcr_list)):
+                temp = processer.effective_feature(energy_list[i], endpoint_list[i])
+                temp = processer.reshape(temp, shape)
+                if len(temp) == 0:
+                    continue
+                energydata =np.concatenate((energydata,temp),axis = 0)
+            energydata = energydata[1:]
+            data = energydata * zcrdata
+            return data, Label
         else:
             print("please choose correct feature, and we will return ZCR by default")
             for i in range(len(zcr_list)):
@@ -80,15 +101,15 @@ class SVM_Classifier:
         When database is big enough you can choose to split original database
         and set validation data.
         '''
-        x_train, x_test, y_train, y_test = train_test_split(Data, Label, train_size=0.66, random_state = 2)
+        x_train, x_test, y_train, y_test = train_test_split(Data, Label, train_size=0.75, random_state = 0)
         clf.fit(x_train, y_train)  # svm classification
-        #print("training result")
-        #print(clf.score(x_train, y_train))  # svm score
-        y_hat = clf.predict(x_train)
-        #print("validating result")
+        print("training result")
+        print(clf.score(x_train, y_train))  # svm score
+        #y_hat = clf.predict(x_train)
+        print("validating result")
         print(clf.score(x_test, y_test))
         #y_hat = clf.predict(x_test)
-        joblib.dump(clf, "train_model.m")
+        joblib.dump(clf, "svm_train_model.m")
     
     def apply(self, Data):
         '''
