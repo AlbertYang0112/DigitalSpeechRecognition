@@ -23,6 +23,28 @@ class Recorder:
         self.CHANNELS = channels
         self.RATE = rate
         self.recorder = pyaudio.PyAudio()
+        self.stream = None
+        self.streaming_mode = False
+        #self.QUEUE_LENGTH = 100000
+        #self.stream_queue = Queue(self.QUEUE_LENGTH)
+        self.stream_queue = Queue()
+
+    def __open_callback_stream(self):
+        if self.stream is not None:
+            self.stream.close()
+        self.stream = self.recorder.open(
+            format=self.FORMAT,
+            channels=self.CHANNELS,
+            rate=self.RATE,
+            input=True,
+            frames_per_buffer=self.CHUNK,
+            stream_callback=self.__stream_callback
+        )
+        self.streaming_mode = True
+
+    def __open_noncallback_stream(self):
+        if self.stream is not None:
+            self.stream.close()
         self.stream = self.recorder.open(
             format=self.FORMAT,
             channels=self.CHANNELS,
@@ -30,11 +52,7 @@ class Recorder:
             input=True,
             frames_per_buffer=self.CHUNK,
         )
-        #self.QUEUE_LENGTH = 100000
-        self.stream.stop_stream()
-        #self.stream_queue = Queue(self.QUEUE_LENGTH)
-        self.stream_queue = Queue()
-        self.stream_proc = Process(target=self.queue_feeder, args=(self.stream, self.stream_queue, self.CHUNK))
+        self.streaming_mode = False
 
     def rec_one_shot(self, sec, file_name=None):
         """
@@ -43,7 +61,7 @@ class Recorder:
         :param file_name: save the sound to this file. If None is provided then no file is saved.
         :return: a 1-D numpy array containing the wave
         """
-        self.stream.start_stream()
+        self.__open_noncallback_stream()
         frames = []
         for i in range(int(self.RATE / self.CHUNK * sec)):
             data = self.stream.read(self.CHUNK)
@@ -57,6 +75,7 @@ class Recorder:
                 wav_file.setframerate(self.RATE)
                 wav_file.writeframes(b''.join(frames))
         frame = np.concatenate(frames, 0)
+        self.stop_streaming()
         return frame
 
     def save_wav(self, wav, file_name):
@@ -66,22 +85,20 @@ class Recorder:
             wav_file.setframerate(self.RATE)
             wav_file.writeframes(b''.join(wav))
 
-    @staticmethod
-    def queue_feeder(stream, output, frame_size):
-        while True:
-            stream.start_stream()
-            wav = stream.read(frame_size)
-            wav = np.fromstring(wav, dtype=np.int16)
-            output.put(wav)
+    def __stream_callback(self, in_data, frame_count, time_info, status):
+        frame = np.fromstring(in_data, dtype=np.int16)
+        self.stream_queue.put(frame)
+        if self.streaming_mode:
+            return in_data, pyaudio.paContinue
+        else:
+            return in_data, pyaudio.paAbort
 
     def start_streaming(self):
-        self.stream.start_stream()
-        while True:
-            self.queue_feeder(self.stream, self.stream_queue, self.CHUNK)
-        #self.stream_proc.start()
+        self.__open_callback_stream()
 
     def stop_streaming(self):
-        self.stream_proc.terminate()
         self.stream.stop_stream()
-
+        self.stream.close()
+        self.streaming_mode = False
+        self.stream = None
 
