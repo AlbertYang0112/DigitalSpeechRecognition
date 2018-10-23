@@ -1,6 +1,8 @@
 import pyaudio
 import wave
 import numpy as np
+#from queue import Queue
+from multiprocessing import Process, Queue
 
 
 class Recorder:
@@ -8,7 +10,7 @@ class Recorder:
     A recorder based on PyAudio.
     """
 
-    def __init__(self, chunk=1024, audio_format=pyaudio.paInt16, channels=1, rate=8000):
+    def __init__(self, chunk=512, audio_format=pyaudio.paInt16, channels=1, rate=44100):
         """
         The construction function initializes the recorder but does not start the input stream.
         :param chunk: buffer size
@@ -28,7 +30,11 @@ class Recorder:
             input=True,
             frames_per_buffer=self.CHUNK,
         )
+        #self.QUEUE_LENGTH = 100000
         self.stream.stop_stream()
+        #self.stream_queue = Queue(self.QUEUE_LENGTH)
+        self.stream_queue = Queue()
+        self.stream_proc = Process(target=self.queue_feeder, args=(self.stream, self.stream_queue, self.CHUNK))
 
     def rec_one_shot(self, sec, file_name=None):
         """
@@ -59,3 +65,23 @@ class Recorder:
             wav_file.setsampwidth(self.recorder.get_sample_size(self.FORMAT))
             wav_file.setframerate(self.RATE)
             wav_file.writeframes(b''.join(wav))
+
+    @staticmethod
+    def queue_feeder(stream, output, frame_size):
+        while True:
+            stream.start_stream()
+            wav = stream.read(frame_size)
+            wav = np.fromstring(wav, dtype=np.int16)
+            output.put(wav)
+
+    def start_streaming(self):
+        self.stream.start_stream()
+        while True:
+            self.queue_feeder(self.stream, self.stream_queue, self.CHUNK)
+        #self.stream_proc.start()
+
+    def stop_streaming(self):
+        self.stream_proc.terminate()
+        self.stream.stop_stream()
+
+
