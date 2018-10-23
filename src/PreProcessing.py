@@ -233,7 +233,7 @@ class PreProcessing:
         data_set = []
         for i in range(len(Data)):
             index = len(Data[i])
-            if index < 5:
+            if index < 20:
                 continue
             new_shape = np.linspace(0, index, shape)
             data = np.reshape(Data[i], index)

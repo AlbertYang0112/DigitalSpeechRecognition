@@ -21,7 +21,6 @@ class SVM_Classifier:
         self.DataListName = DataListName
 
     def read_data(self, DataListName, FeatureName,shape):
-        # Todo: Remove the read_data method.
         '''
         Load original data and the feature that you choose to use is needed
         You can choose different output shape.
@@ -36,12 +35,16 @@ class SVM_Classifier:
         Label = []
         processer = PreProcessing(512, 128)
         wav_list, frame_list, energy_list, zcr_list, endpoint_list, Label = processer.process(DataListName)
+        print("shape of label is:", np.shape(Label))
         if Feature[0] == 'E':
-            for i in range(len(zcr_list)):
+            for i in range(len(energy_list)):
                 temp = processer.effective_feature(energy_list[i], endpoint_list[i])
                 temp = processer.reshape(temp, shape)
                 if len(temp) == 0:
-                    Label = Label[0:i-1]+Label[i:]
+                    if i != 0:
+                        Label = Label[0:i-1]+Label[i:]
+                    else:
+                        Label = Label[1:]
                     continue
                 Data=np.concatenate((Data,temp),axis = 0)
             Data = Data[1:]
@@ -50,8 +53,12 @@ class SVM_Classifier:
             for i in range(len(zcr_list)):
                 temp = processer.effective_feature(zcr_list[i], endpoint_list[i])
                 temp = processer.reshape(temp, shape)
+                print(np.shape(temp))
                 if len(temp) == 0:
-                    Label = Label[0:i-1]+Label[i:]
+                    if i != 0:
+                        Label = Label[0:i-1]+Label[i:]
+                    else:
+                        Label = Label[1:]
                     continue
                 Data=np.concatenate((Data,temp),axis = 0)
             Data = Data[1:]
@@ -61,11 +68,13 @@ class SVM_Classifier:
                 temp = processer.effective_feature(zcr_list[i], endpoint_list[i])
                 temp = processer.reshape(temp, shape)
                 if len(temp) == 0:
-                    Label = Label[0:i-1]+Label[i:]
+                    Lif i != 0:
+                        Label = Label[0:i-1]+Label[i:]
+                    else:
+                        Label = Label[1:]
                     continue
                 zcrdata = np.concatenate((zcrdata,temp),axis = 0)
             zcrdata = zcrdata[1:]
-            print(np.shape(zcrdata))
             for i in range(len(zcr_list)):
                 temp = processer.effective_feature(energy_list[i], endpoint_list[i])
                 temp = processer.reshape(temp, shape)
@@ -81,7 +90,10 @@ class SVM_Classifier:
                 temp = processer.effective_feature(zcr_list[i], endpoint_list[i])
                 temp = processer.reshape(temp, shape)
                 if len(temp) == 0:
-                    Label = Label[0:i-1]+Label[i:]
+                    if i != 0:
+                        Label = Label[0:i-1]+Label[i:]
+                    else:
+                        Label = Label[1:]
                     continue
                 Data=np.concatenate((Data,temp),axis = 0)
             Data = Data[1:]
@@ -101,6 +113,8 @@ class SVM_Classifier:
         When database is big enough you can choose to split original database
         and set validation data.
         '''
+        print(np.shape(Data))
+        print(np.shape(Label))
         x_train, x_test, y_train, y_test = train_test_split(Data, Label, train_size=0.75, random_state = 0)
         clf.fit(x_train, y_train)  # svm classification
         print("training result")
@@ -115,7 +129,7 @@ class SVM_Classifier:
         '''
         Apply a model to predict
         '''
-        clf = joblib.load("train_model.m")
+        clf = joblib.load("svm_train_model.m")
         return clf.predict(Data)
 
     def show_accuracy(self, y_pre, y_true, Signal):

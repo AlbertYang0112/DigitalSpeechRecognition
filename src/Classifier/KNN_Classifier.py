@@ -40,22 +40,32 @@ class KNN_Classifier:
         Label = []
         processer = PreProcessing(512, 128)
         wav_list, frame_list, energy_list, zcr_list, endpoint_list, Label = processer.process(DataListName)
+        print("shape of label is:", np.shape(Label))
         if Feature[0] == 'E':
             for i in range(len(energy_list)):
                 temp = processer.effective_feature(energy_list[i], endpoint_list[i])
                 temp = processer.reshape(temp, shape)
                 if len(temp) == 0:
-                    Label = Label[0:i-1]+Label[i:]
+                    if i != 0:
+                        Label = Label[0:i-1]+Label[i:]
+                    else:
+                        Label = Label[1:]
                     continue
                 Data=np.concatenate((Data,temp),axis = 0)
             Data = Data[1:]
             return Data, Label
         elif Feature[0] == 'Z':
+            print(len(zcr_list))
+            print(np.shape(Data))
             for i in range(len(zcr_list)):
                 temp = processer.effective_feature(zcr_list[i], endpoint_list[i])
                 temp = processer.reshape(temp, shape)
+                print(np.shape(temp))
                 if len(temp) == 0:
-                    Label = Label[0:i-1]+Label[i:]
+                    if i != 0:
+                        Label = Label[0:i-1]+Label[i:]
+                    else:
+                        Label = Label[1:]
                     continue
                 Data=np.concatenate((Data,temp),axis = 0)
             Data = Data[1:]
@@ -67,7 +77,10 @@ class KNN_Classifier:
                 temp = processer.effective_feature(zcr_list[i], endpoint_list[i])
                 temp = processer.reshape(temp, shape)
                 if len(temp) == 0:
-                    Label = Label[0:i-1]+Label[i:]
+                    if i != 0:
+                        Label = Label[0:i-1]+Label[i:]
+                    else:
+                        Label = Label[1:]
                     continue
                 zcrdata = np.concatenate((zcrdata,temp),axis = 0)
             zcrdata = zcrdata[1:]
@@ -87,7 +100,10 @@ class KNN_Classifier:
                 temp = processer.effective_feature(zcr_list[i], endpoint_list[i])
                 temp = processer.reshape(temp, shape)
                 if len(temp) == 0:
-                    Label = Label[0:i-1]+Label[i:]
+                    if i != 0:
+                        Label = Label[0:i-1]+Label[i:]
+                    else:
+                        Label = Label[1:]
                     continue
                 Data=np.concatenate((Data,temp),axis = 0)
             Data = Data[1:]

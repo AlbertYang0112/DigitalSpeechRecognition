@@ -1,5 +1,7 @@
 import os
 import sys
+lib_path = os.path.abspath(os.path.join(sys.path[0], '..'))
+sys.path.append(lib_path)
 from src.Classifier import Classifier
 from src.PreProcessing import PreProcessing
 import numpy as np

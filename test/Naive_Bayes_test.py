@@ -20,5 +20,5 @@ The statistic parameter of NB clf can be adjusted in the 'Naive_Bayes_Classifier
 '''
 
 Classifier = Naive_Bayes_Classifier(foldername, 'G')
-Data, Label = Classifier.read_data(foldername, 'z', 25)
+Data, Label = Classifier.read_data(foldername, 'z', 15)
 Classifier.train(Data, Label)

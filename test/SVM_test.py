@@ -19,5 +19,5 @@ low training score around 75%.
 '''
 
 Classifier = SVM_Classifier(foldername)
-Data, Label = Classifier.read_data(foldername, 'w',15)
+Data, Label = Classifier.read_data(foldername, 'z',15)
 Classifier.train(Data, Label)
