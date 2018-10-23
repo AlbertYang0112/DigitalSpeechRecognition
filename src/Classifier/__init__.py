@@ -4,4 +4,5 @@ __all__ = [
     'RandomForest_Classifier',
     'SVM_Classifier'
     'CNN_Classifier'
+    'DecisionTree_Classifier'
 ]
