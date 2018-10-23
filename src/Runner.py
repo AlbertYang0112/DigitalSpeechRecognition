@@ -10,7 +10,7 @@ CONFIG = {
     'frame size': 512,
     'overlap': 128,
     'is training': True,
-    'is streaming': False,
+    'is streaming': True,
     'data list': '../DataSet/DataList_all.txt',
     'classifier': ['all'],
     'argumentation': False
@@ -22,7 +22,21 @@ def main():
                                  overlap=CONFIG['overlap'])
     if CONFIG['is streaming']:
         # Todo: Add streaming support.
-        raise NotImplementedError
+        preprocessor_proc, queue_dict = preprocessor.process_stream()
+        preprocessor_proc.start()
+        preprocessor.recorder.start_streaming()
+        while True:
+            zcr = queue_dict['zcr'].get(True)
+            ep = queue_dict['endpoint'].get(True)
+            effective_feature = preprocessor.effective_feature(zcr, ep)
+            if len(effective_feature) == 0:
+                continue
+            effective_feature = preprocessor.reshape(effective_feature, 25)
+            for classifier_name, classifier_class in classifier_classes.items():
+                print(classifier_name)
+                classifier = classifier_class(None)
+                res = classifier.apply(effective_feature)
+                print(res)
     else:
         wav_list, frame_list, energy_list, \
         zcr_list, endpoint_list, label_list = preprocessor.process(CONFIG['data list'])

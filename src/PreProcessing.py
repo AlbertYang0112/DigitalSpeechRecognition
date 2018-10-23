@@ -3,7 +3,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 from src.FileLoader import FileLoader
 from src.FeatureExtractors import FeatureExtractors
+from src.Recorder import Recorder
 from scipy import interpolate
+from multiprocessing import Queue, Process
 
 
 class PreProcessing:
@@ -13,6 +15,7 @@ class PreProcessing:
         self.frame_size = frame_size
         self.overlap = overlap
         self.loader = FileLoader()
+        self.recorder = Recorder()
         plt.ion()
         plt.figure(2)
 
@@ -58,6 +61,94 @@ class PreProcessing:
                 zcr_list.append(zcr)
                 endpoint_list.append(endpoint)
             return wav_list, frame_list, energy_list, zcr_list, endpoint_list, label_list
+
+    def process_stream(self):
+        queue = self.recorder.stream_queue
+        wav_queue = Queue()
+        frame_queue = Queue()
+        energy_queue = Queue()
+        zcr_queue = Queue()
+        endpoint_queue = Queue()
+        queue_dict = {
+            'wave':wav_queue,
+            'frame':frame_queue,
+            'energy':energy_queue,
+            'zcr':zcr_queue,
+            'endpoint':endpoint_queue
+        }
+        def conv_proc(wav_input, output_dict):
+            PRE_FRAME_NUM = 20
+            noise_frames = []
+            for i in range(10):
+                noise = queue.get(True).astype(np.float32)
+                noise_frames.append(noise)
+                print(noise)
+            noise_frames = np.concatenate(noise_frames)
+            energy = np.sum(np.square(noise_frames))
+            avg = np.average(energy)
+            variance = np.var(energy)
+            print(avg)
+            threshold = avg + 5 * np.sqrt(variance)
+            print("THRESHOLD =", threshold)
+            leading_frame = Queue(PRE_FRAME_NUM)
+            recording = False
+            state = 0
+            rec = []
+            while True:
+                wav = wav_input.get(True).astype(np.float32)
+                energy = np.sum(np.square(wav))
+                if energy > threshold:
+                    if state < 2:
+                        state += 1
+                    else:
+                        recording = True
+                        state = 20
+                else:
+                    if state > 0:
+                        if recording:
+                            state -= 1
+                    else:
+                        if recording:
+                            plt.clf()
+                            wav_full = np.concatenate(rec)
+                            leading_frame_full = []
+                            while not leading_frame.empty():
+                                leading_frame_temp = leading_frame.get(True).astype(np.float32)
+                                leading_frame_full.append(leading_frame_temp)
+                            leading_frame_full = np.concatenate(leading_frame_full)
+                            wav_full = np.concatenate((leading_frame_full, wav_full))
+                            plt.subplot(121)
+                            plt.plot(wav_full)
+                            plt.subplot(122)
+                            plt.plot(leading_frame_full)
+                            plt.draw()
+                            plt.pause(0.001)
+                            frames = FeatureExtractors.enhance_frame(
+                                wav_data=wav_full,
+                                frame_size=self.frame_size,
+                                overlap=self.overlap,
+                                windowing_method='Hamming'
+                            )
+                            energy = FeatureExtractors.energy(frames)
+                            zcr = FeatureExtractors.zero_crossing_rate(frames)
+                            endpoint = self.VAD_advance(energy)
+                            zcr = np.reshape(zcr, [len(zcr)])
+                            endpoint = np.reshape(endpoint, [len(endpoint)])
+                            output_dict['wave'].put(wav_full)
+                            output_dict['frame'].put(frames)
+                            output_dict['energy'].put(energy)
+                            output_dict['zcr'].put(zcr)
+                            output_dict['endpoint'].put(endpoint)
+                        rec.clear()
+                        recording = False
+                if recording:
+                    rec.append(wav)
+                else:
+                    if leading_frame.full():
+                        leading_frame.get(True)
+                    leading_frame.put(wav)
+        proc = Process(target=conv_proc, args=(queue, queue_dict))
+        return proc, queue_dict
 
     # Todo: Remove Chinese comments.
     # 新增的利用双门限法的语音端点检测
@@ -203,3 +294,6 @@ class PreProcessing:
 
         # show the plot result
         plt.show()
+
+    def __del__(self, exc_type, exc_val, exc_tb):
+        plt.close()
