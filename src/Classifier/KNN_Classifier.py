@@ -13,7 +13,7 @@ from sklearn.model_selection import train_test_split
 
 class KNN_Classifier:
     '''
-    This is the Naive_Bayes_Classifier of different voice information.
+    This is the KNN_Classifier of different voice information.
     We try to utilized multiple methods to actualize the classification task
     and this is one of them.
     '''
@@ -96,7 +96,7 @@ class KNN_Classifier:
     def train(self, Data, Label):
         # Todo: Specify the model dump location.
         '''
-        Train SVM model
+        Train KNN model
         Feature data and labels are needed
         '''
         clf = KNeighborsClassifier()

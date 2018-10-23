@@ -13,7 +13,7 @@ Please speak loudly in a quiet place when you build the database.
 foldername = '../DataSet/DataList.txt' 
 
 '''
-This is the demo of decision tree classifier for comparative trial
+This is the demo of decision K-Nearest-Neighbor classifier for comparative trial
 and the best performance is around 54%
 '''
 
