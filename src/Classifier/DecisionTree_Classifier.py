@@ -111,7 +111,7 @@ class DecisionTree_Classifier:
         print("validating result")
         print(clf.score(x_test, y_test))
         # y_hat = clf.predict(x_test)
-        joblib.dump(clf, "Naive_Bayes_train_model.m")
+        joblib.dump(clf, "Decision_Tree_train_model.m")
 
     def apply(self, Data):
         '''
