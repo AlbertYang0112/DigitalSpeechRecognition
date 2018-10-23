@@ -117,6 +117,9 @@ class PreProcessing:
                                 leading_frame_full.append(leading_frame_temp)
                             leading_frame_full = np.concatenate(leading_frame_full)
                             wav_full = np.concatenate((leading_frame_full, wav_full))
+                            wav_full = wav_full * 1.0 / np.max(np.abs(wav_full))
+                            wav_full = np.where(np.abs(wav_full) < 0.01,
+                                                0, wav_full)
                             plt.subplot(121)
                             plt.plot(wav_full)
                             plt.subplot(122)
