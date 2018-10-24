@@ -10,7 +10,7 @@ The training data cannot have multiple labels.
 Please speak loudly in a quiet place when you build the database.
 '''
 
-foldername = '../DataSet/DataList.txt'
+foldername = '../DataSet/DataList_all.txt'
 
 '''
 This is the demo of naive bayes classifier which seems to be a little 
@@ -20,5 +20,5 @@ The statistic parameter of NB clf can be adjusted in the 'Naive_Bayes_Classifier
 '''
 
 Classifier = Naive_Bayes_Classifier(foldername, 'G')
-Data, Label = Classifier.read_data(foldername, 'z', 15)
+Data, Label = Classifier.read_data(foldername, 'e', 25)
 Classifier.train(Data, Label)

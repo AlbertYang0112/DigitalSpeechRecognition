@@ -17,7 +17,7 @@ class FeatureExtractors:
             System equation: y[t] = x[t] - coe * x[t - 1]
             """
             single_frame = wav_data[np.arange(i * step, min(i * step + frame_size, length))]
-            single_frame = np.append(single_frame[0], single_frame[:-1] - coefficient * single_frame[1:])  # 预加重
+            single_frame = np.append(single_frame[0], single_frame[:-1] - coefficient * single_frame[1:])
             frame_data[:len(single_frame), i] = single_frame
             frame_data[:, i] = FeatureExtractors.windowing(windowing_method, frame_size, frame_data[:, i])
 

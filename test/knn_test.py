@@ -10,7 +10,7 @@ The training data cannot have multiple labels.
 Please speak loudly in a quiet place when you build the database.
 '''
 
-foldername = '../DataSet/DataList.txt' 
+foldername = '../DataSet/DataList_all.txt' 
 
 '''
 This is the demo of decision K-Nearest-Neighbor classifier for comparative trial
@@ -18,5 +18,5 @@ and the best performance is around 54%
 '''
 
 Classifier = KNN_Classifier(foldername)
-Data, Label = Classifier.read_data(foldername, 'z',20)
+Data, Label = Classifier.read_data(foldername, 'w',25)
 Classifier.train(Data, Label)

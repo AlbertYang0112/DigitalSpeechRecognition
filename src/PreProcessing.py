@@ -159,7 +159,7 @@ class PreProcessing:
     def VAD_advance(self, energy):
         MEAN = np.sum(energy) / len(energy)
         High = 0.4 * MEAN  # 语音能量上限
-        Low = 0.02 * MEAN  # 能量下限
+        Low = 0.1 * MEAN  # 能量下限
         Data1 = []  # 存放低位能量数据
         Data2 = []  # 存放高位能量数据
         Endpoint = []  # 存放两个节点
@@ -214,9 +214,16 @@ class PreProcessing:
             print("No active voice detected")
             return []
         else:
-            endpoint = []
-            for i in range(counter):
-                endpoint.append(Endpoint[i])
+            endpoint = []   
+            endpoint.append(Endpoint[0])
+            endpoint.append(Endpoint[1])
+            index = Endpoint[1] - Endpoint[0]
+            for i in range(int(counter/2) -1):
+                if Endpoint[2*i+1] - Endpoint[2*i] > index:
+                    index = Endpoint[2*i+1] - Endpoint[2*i]
+                    endpoint = []
+                    endpoint.append(Endpoint[0])
+                    endpoint.append(Endpoint[1])
             return endpoint
 
     @staticmethod
@@ -233,7 +240,7 @@ class PreProcessing:
         data_set = []
         for i in range(len(Data)):
             index = len(Data[i])
-            if index < 20:
+            if index < 4:
                 continue
             new_shape = np.linspace(0, index, shape)
             data = np.reshape(Data[i], index)

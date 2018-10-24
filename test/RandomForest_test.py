@@ -10,7 +10,7 @@ The training data cannot have multiple labels.
 Please speak loudly in a quiet place when you build the database.
 '''
 
-foldername = '../DataSet/DataList.txt'
+foldername = '../DataSet/DataList_all.txt'
 
 '''
 The performance of randomforest is worse than svm

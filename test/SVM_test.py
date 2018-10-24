@@ -10,7 +10,7 @@ The training data cannot have multiple labels.
 Please speak loudly in a quiet place when you build the database.
 '''
 
-foldername = '../DataSet/DataList.txt' 
+foldername = '../DataSet/DataList_all.txt' 
 
 '''
 the performance in zcr is much better than energy
@@ -19,5 +19,5 @@ low training score around 75%.
 '''
 
 Classifier = SVM_Classifier(foldername)
-Data, Label = Classifier.read_data(foldername, 'z',15)
+Data, Label = Classifier.read_data(foldername, 'e',25)
 Classifier.train(Data, Label)

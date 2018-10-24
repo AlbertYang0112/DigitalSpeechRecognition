@@ -38,71 +38,63 @@ class Naive_Bayes_Classifier:
         Data = np.zeros((1,shape))
         zcrdata = np.zeros((1,shape))
         energydata = np.zeros((1,shape))
-        Label = []
+        eff_label_list = []
         processer = PreProcessing(512, 128)
-        wav_list, frame_list, energy_list, zcr_list, endpoint_list, Label = processer.process(DataListName)
-        print("shape of label is:", np.shape(Label))
+        wav_list, frame_list, energy_list, zcr_list, endpoint_list, label_list = processer.process(DataListName)
         if Feature[0] == 'E':
             for i in range(len(energy_list)):
                 temp = processer.effective_feature(energy_list[i], endpoint_list[i])
                 temp = processer.reshape(temp, shape)
-                if len(temp) == 0:
-                    if i != 0:
-                        Label = Label[0:i-1]+Label[i:]
-                    else:
-                        Label = Label[1:]
-                    continue
+                if len(temp) != 0:
+                    eff_label_list.append(label_list[i])
+                else:
+                    continue 
                 Data=np.concatenate((Data,temp),axis = 0)
             Data = Data[1:]
-            return Data, Label
+            return Data, eff_label_list
         elif Feature[0] == 'Z':
             for i in range(len(zcr_list)):
                 temp = processer.effective_feature(zcr_list[i], endpoint_list[i])
                 temp = processer.reshape(temp, shape)
-                if len(temp) == 0:
-                    if i != 0:
-                        Label = Label[0:i-1]+Label[i:]
-                    else:
-                        Label = Label[1:]
-                    continue
+                print(np.shape(temp))
+                if len(temp) != 0:
+                    eff_label_list.append(label_list[i])
+                else:
+                    continue 
                 Data=np.concatenate((Data,temp),axis = 0)
             Data = Data[1:]
-            return Data, Label
+            return Data, eff_label_list
         elif Feature[0] == 'W':
             for i in range(len(zcr_list)):
                 temp = processer.effective_feature(zcr_list[i], endpoint_list[i])
                 temp = processer.reshape(temp, shape)
-                if len(temp) == 0:
-                    if i != 0:
-                        Label = Label[0:i-1]+Label[i:]
-                    else:
-                        Label = Label[1:]
-                    continue
+                if len(temp) != 0:
+                    eff_label_list.append(label_list[i])
+                else:
+                    continue 
                 zcrdata = np.concatenate((zcrdata,temp),axis = 0)
             zcrdata = zcrdata[1:]
             for i in range(len(zcr_list)):
                 temp = processer.effective_feature(energy_list[i], endpoint_list[i])
                 temp = processer.reshape(temp, shape)
                 if len(temp) == 0:
-                    continue
+                    continue 
                 energydata =np.concatenate((energydata,temp),axis = 0)
             energydata = energydata[1:]
             data = energydata * zcrdata
-            return data, Label
+            return data, eff_label_list
         else:
             print("please choose correct feature, and we will return ZCR by default")
             for i in range(len(zcr_list)):
                 temp = processer.effective_feature(zcr_list[i], endpoint_list[i])
                 temp = processer.reshape(temp, shape)
-                if len(temp) == 0:
-                    if i != 0:
-                        Label = Label[0:i-1]+Label[i:]
-                    else:
-                        Label = Label[1:]
-                    continue
+                if len(temp) != 0:
+                    eff_label_list.append(label_list[i])
+                else:
+                    continue 
                 Data=np.concatenate((Data,temp),axis = 0)
             Data = Data[1:]
-            return Data, Label
+            return Data, eff_label_list
 
     def train(self, Data, Label):
         '''
