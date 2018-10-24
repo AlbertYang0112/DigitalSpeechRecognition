@@ -94,7 +94,7 @@ class CNN_Classifier:
             return Data, eff_label_list
     
     def data_processer(self, Data, Label, shape, nb_classes):
-        X_train, X_test, Y_train, Y_test = train_test_split(Data, Label, random_state=0, train_size=0.75)
+        X_train, X_test, Y_train, Y_test = train_test_split(Data, Label, random_state=1, train_size=0.75)
         X_train = X_train.astype('float32')
         X_test = X_test.astype('float32')
         X_train /= np.max(np.abs(X_train))
@@ -110,24 +110,24 @@ class CNN_Classifier:
     
     def cnn_model(self,input_shape, pool_size, nb_filters, kernel_size, nb_classes):
         model = Sequential()
-        model.add(Convolution1D(nb_filters, kernel_size,
+        model.add(Convolution1D(16, 10,
                                 padding='same',input_shape = input_shape[1:])) # 卷积层1
         model.add(Activation('relu')) #激活层
         model.add(MaxPooling1D(pool_size=pool_size)) #池化层
-        model.add(Convolution1D(nb_filters, 10)) #卷积层2
+        model.add(Convolution1D(32, 10)) #卷积层2
         model.add(Activation('relu')) #激活
-        model.add(Convolution1D(nb_filters, 10)) #卷积层2
+        model.add(Convolution1D(64, 10)) #卷积层2
         model.add(Activation('relu')) #激活
-        model.add(Convolution1D(nb_filters, 10)) #卷积层2
+        model.add(Convolution1D(64, 15)) #卷积层2
         model.add(Activation('relu')) #激活
-        model.add(Convolution1D(nb_filters, 10)) #卷积层2
+        model.add(Convolution1D(128, 10)) #卷积层2
         model.add(Activation('relu')) #激活
-        model.add(Convolution1D(nb_filters, 10)) #卷积层2
+        model.add(Convolution1D(128, 10)) #卷积层2
         model.add(Activation('relu')) #激活
-        model.add(Convolution1D(nb_filters, 10,
+        model.add(Convolution1D(128, 10,
                                 padding='same')) # 卷积层1
         model.add(Activation('relu')) #激活层
-        model.add(MaxPooling1D(pool_size=5)) #池化层
+        model.add(MaxPooling1D(pool_size=3)) #池化层
 
         #model.add(ConvLSTM2D(128,kernel_size = kernel_size, dropout=0.5, recurrent_dropout=0.5))
         #model.add(LSTM(256, dropout=0.5, recurrent_dropout=0.5))
