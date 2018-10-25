@@ -18,5 +18,5 @@ and the best performance is around 54%
 '''
 
 Classifier = DecisionTree_Classifier(foldername)
-Data, Label = Classifier.read_data(foldername, 'w',25)
+Data, Label = Classifier.read_data(foldername, 'z',25)
 Classifier.train(Data, Label)

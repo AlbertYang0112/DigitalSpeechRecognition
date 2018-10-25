@@ -50,7 +50,6 @@ class SVM_Classifier:
             for i in range(len(zcr_list)):
                 temp = processer.effective_feature(zcr_list[i], endpoint_list[i])
                 temp = processer.reshape(temp, shape)
-                print(np.shape(temp))
                 if len(temp) != 0:
                     eff_label_list.append(label_list[i])
                 else:
@@ -96,7 +95,7 @@ class SVM_Classifier:
         Train SVM model
         Feature data and labels are needed
         '''
-        clf = svm.SVC(C=0.5, kernel='poly', gamma=20, decision_function_shape='ovr')
+        clf = svm.SVC(C=0.4, kernel='poly', degree = 3, gamma=20, decision_function_shape='ovr')
         #x_train = Data
         #y_train = Label
         '''
@@ -106,7 +105,7 @@ class SVM_Classifier:
         '''
         print(np.shape(Data))
         print(np.shape(Label))
-        x_train, x_test, y_train, y_test = train_test_split(Data, Label, train_size=0.75, random_state = 0)
+        x_train, x_test, y_train, y_test = train_test_split(Data, Label, train_size=0.75, random_state = 1)
         clf.fit(x_train, y_train)  # svm classification
         print("training result")
         print(clf.score(x_train, y_train))  # svm score

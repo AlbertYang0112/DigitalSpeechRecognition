@@ -55,7 +55,6 @@ class DecisionTree_Classifier:
             for i in range(len(zcr_list)):
                 temp = processer.effective_feature(zcr_list[i], endpoint_list[i])
                 temp = processer.reshape(temp, shape)
-                print(np.shape(temp))
                 if len(temp) != 0:
                     eff_label_list.append(label_list[i])
                 else:

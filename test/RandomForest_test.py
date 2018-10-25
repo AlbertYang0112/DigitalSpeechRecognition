@@ -19,5 +19,5 @@ and if we switch it to energy, the validating result is around 40%
 '''
 
 Classifier = RandomForest_Classifier(foldername)
-Data, Label = Classifier.read_data(foldername, 'zcr', 25)
+Data, Label = Classifier.read_data(foldername, 'e', 25)
 Classifier.train(Data, Label)
