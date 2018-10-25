@@ -159,7 +159,7 @@ class PreProcessing:
     def VAD_advance(self, energy):
         MEAN = np.sum(energy) / len(energy)
         High = 0.4 * MEAN  # 语音能量上限
-        Low = 0.1 * MEAN  # 能量下限
+        Low = 0.05 * MEAN  # 能量下限
         Data1 = []  # 存放低位能量数据
         Data2 = []  # 存放高位能量数据
         Endpoint = []  # 存放两个节点

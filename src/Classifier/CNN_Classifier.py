@@ -36,7 +36,7 @@ class CNN_Classifier:
         zcrdata = np.zeros((1,shape))
         energydata = np.zeros((1,shape))
         eff_label_list = []
-        processer = PreProcessing(512, 128)
+        processer = PreProcessing(128, 32)
         wav_list, frame_list, energy_list, zcr_list, endpoint_list, label_list = processer.process(DataListName)
         if Feature[0] == 'E':
             for i in range(len(energy_list)):

@@ -12,7 +12,7 @@ CONFIG = {
     'frame size': 512,
     'overlap': 128,
     'is training': True,
-    'is streaming': False,
+    'is streaming': True,
     'data list': '../DataSet/DataList_all.txt',
     'classifier': ['all'],
     'argumentation': False
@@ -29,7 +29,7 @@ def main():
             preprocessor_proc.start()
             preprocessor.recorder.start_streaming()
             while True:
-                zcr = queue_dict['zcr'].get(True)
+                zcr = queue_dict['energy'].get(True)
                 ep = queue_dict['endpoint'].get(True)
                 effective_feature = preprocessor.effective_feature(zcr, ep)
                 if len(effective_feature) == 0:
@@ -52,8 +52,8 @@ def main():
         eff_label_list = []
         # Todo: Rewrite the relating preprocessor code.
         # Multiple data type mixed. Change the list of np array to pure np array.
-        for i in range(len(zcr_list)):
-            temp = preprocessor.effective_feature(zcr_list[i], endpoint_list[i])
+        for i in range(len(energy_list)):
+            temp = preprocessor.effective_feature(energy_list[i], endpoint_list[i])
             temp = preprocessor.reshape(temp, 25)
             if len(temp) != 0:
                 eff_label_list.append(label_list[i])
