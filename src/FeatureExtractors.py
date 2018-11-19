@@ -1,4 +1,5 @@
 import numpy as np
+from python_speech_features import *
 
 
 class FeatureExtractors:
@@ -56,3 +57,8 @@ class FeatureExtractors:
             return frame
         windowing_func = method_dict[method]
         return windowing_func(size) * frame
+
+    @staticmethod
+    def mfcc_extractor(wav_data):
+        mfcc_feature = mfcc(wav_data,44100)
+        return mfcc_feature
