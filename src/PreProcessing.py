@@ -29,14 +29,16 @@ class PreProcessing:
                 overlap=self.overlap,
                 windowing_method='Hamming'
             )
+            mfcc_feat = FeatureExtractors.mfcc_extractor(wav_data[endpoint[0]*(512-128):endpoint[1]*(512-128)])
             energy = FeatureExtractors.energy(frames)
             zcr = FeatureExtractors.zero_crossing_rate(frames)
             endpoint = self.VAD_advance(energy)
-            return wav_data, frames, energy, zcr, endpoint
+            return wav_data, frames, mfcc_feat, energy, zcr, endpoint
         elif file_name[-3:] == 'txt':
             self.loader.set_data_list(file_name)
             wav_list = []
             frame_list = []
+            mfcc_list = []
             energy_list = []
             zcr_list = []
             endpoint_list = []
@@ -52,15 +54,18 @@ class PreProcessing:
                 energy = FeatureExtractors.energy(frames)
                 zcr = FeatureExtractors.zero_crossing_rate(frames)
                 endpoint = self.VAD_advance(energy)
+                new_wav = self.reshape_1D(wav_data[endpoint[0]*(512-128):endpoint[1]*(512-128)],3000)
+                mfcc_feat = FeatureExtractors.mfcc_extractor(new_wav)
                 zcr = np.reshape(zcr, [len(zcr)])
                 endpoint = np.reshape(endpoint, [len(endpoint)])
                 wav_list.append(wav_data)
                 frame_list.append(frames)
+                mfcc_list.append(mfcc_feat)
                 energy_list.append(energy)
                 label_list.append(label)
                 zcr_list.append(zcr)
                 endpoint_list.append(endpoint)
-            return wav_list, frame_list, energy_list, zcr_list, endpoint_list, label_list
+            return wav_list, frame_list, mfcc_list, energy_list, zcr_list, endpoint_list, label_list
 
     def process_stream(self):
         queue = self.recorder.stream_queue
@@ -248,6 +253,16 @@ class PreProcessing:
             f = interpolate.interp1d(x, data, kind='cubic')
             data_set.append(f(new_shape))
         return data_set
+    
+    @staticmethod
+    def reshape_1D(Data, shape):
+        index = len(Data)
+        new_shape = np.linspace(0, index, shape)
+        data = np.reshape(Data, index)
+        x = np.linspace(0, index, index)
+        f = interpolate.interp1d(x, data, kind='cubic')
+        return f(new_shape)
+
 
     def print_result(self, filename, frame, energy, zcr, endpoint):
         # Todo: Format the method.
