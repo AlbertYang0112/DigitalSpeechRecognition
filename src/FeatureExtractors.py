@@ -60,5 +60,5 @@ class FeatureExtractors:
 
     @staticmethod
     def mfcc_extractor(wav_data):
-        mfcc_feature = mfcc(wav_data, 44100)
+        mfcc_feature = mfcc(wav_data, 44100, nfft=2048)
         return mfcc_feature

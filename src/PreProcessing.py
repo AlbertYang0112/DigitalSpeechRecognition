@@ -5,7 +5,7 @@ from src.FileLoader import FileLoader
 from src.FeatureExtractors import FeatureExtractors
 from src.Recorder import Recorder
 from scipy import interpolate
-from multiprocessing import Queue, Process
+from multiprocessing import Queue, Process, set_start_method
 
 
 class PreProcessing:
@@ -158,6 +158,7 @@ class PreProcessing:
                     if leading_frame.full():
                         leading_frame.get(True)
                     leading_frame.put(wav)
+
         proc = Process(target=conv_proc, args=(queue, queue_dict))
         return proc, queue_dict
 

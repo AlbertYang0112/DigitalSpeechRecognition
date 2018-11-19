@@ -2,6 +2,8 @@ import abc
 from src.Classifier.Naive_Bayes_Classifier import Naive_Bayes_Classifier
 from src.Classifier.RandomForest_Classifier import RandomForest_Classifier
 from src.Classifier.SVM_Classifier import SVM_Classifier
+from src.Classifier.KNN_Classifier import KNN_Classifier
+from src.Classifier.DecisionTree_Classifier import DecisionTree_Classifier
 
 
 class Classifier:
@@ -32,7 +34,9 @@ def classifier_dict():
     classifiers = {
         'naive_bayes': Naive_Bayes_Classifier,
         'random_forest': RandomForest_Classifier,
-        'SVM': SVM_Classifier
+        'SVM': SVM_Classifier,
+        'KNN': KNN_Classifier,
+        'Decision_Tree': DecisionTree_Classifier
     }
     return classifiers
 
