@@ -14,8 +14,8 @@ foldername = '../DataSet/DataList_all.txt'
 modelfoldername = '../DataSet/ModelList_all.txt' 
 
 '''
-This is the demo of decision K-Nearest-Neighbor classifier for comparative trial
-and the best performance is around 54%
+This is the demo of decision DTW classifier
+and the best performance is around 85%
 '''
 
 Classifier = DTW_Classifier(foldername, modelfoldername)
