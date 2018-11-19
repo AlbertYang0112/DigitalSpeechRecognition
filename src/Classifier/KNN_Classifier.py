@@ -38,8 +38,9 @@ class KNN_Classifier:
         zcrdata = np.zeros((1,shape))
         energydata = np.zeros((1,shape))
         eff_label_list = []
+        eff_mfcc = []
         processer = PreProcessing(512, 128)
-        wav_list, frame_list, energy_list, zcr_list, endpoint_list, label_list = processer.process(DataListName)
+        wav_list, frame_list, mfcc_list, energy_list, zcr_list, endpoint_list, label_list = processer.process(DataListName)
         if Feature[0] == 'E':
             for i in range(len(energy_list)):
                 temp = processer.effective_feature(energy_list[i], endpoint_list[i])
@@ -81,6 +82,15 @@ class KNN_Classifier:
             energydata = energydata[1:]
             data = energydata * zcrdata
             return data, eff_label_list
+        elif Feature[0] == "M":
+            for i in range(len(mfcc_list)):
+                temp = processer.effective_feature(mfcc_list[i], endpoint_list[i])
+                if endpoint_list[i][1]-endpoint_list[i][0] != 0:
+                    eff_label_list.append(label_list[i])
+                    eff_mfcc.append(mfcc_list[i])
+                else:
+                    continue
+            return eff_mfcc, eff_label_list
         else:
             print("please choose correct feature, and we will return ZCR by default")
             for i in range(len(zcr_list)):
