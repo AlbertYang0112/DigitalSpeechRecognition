@@ -17,6 +17,8 @@ the performance in zcr is much better than energy
 the validating result of zcr can reach 50% but result of energy can only reach 46% with
 low training score around 75%.
 '''
+#TODO mfcc matrix cannot be applyed in classifiers directly.
+
 
 Classifier = SVM_Classifier(foldername)
 Data, Label = Classifier.read_data(foldername, 'z',25)

@@ -8,6 +8,7 @@ from src.FileLoader import *
 import matplotlib.pyplot as plt
 from sklearn.externals import joblib
 from sklearn.model_selection import train_test_split
+from numpy import *
 
 class DTW_Classifier:
     '''
@@ -16,20 +17,18 @@ class DTW_Classifier:
     and this is one of them.
     '''
 
-    def __init__(self, DataListName):
+    def __init__(self, DataListName, ModelListName):
         '''
         The type of classifier should be choosed.
         '''
         self.DataListName = '../DataSet/DataList.txt'
-
+        self.ModelListName = '../DataSet/ModelList.txt'
 
     def read_data(self, DataListName):
         '''
-        Load original data and the feature that you choose to use is needed
+        Load original data
         You can choose different output shape.
         :DataListName: The log.txt path
-        :FeatureName: The name of the feature that you choose to use
-        :shape: The output shape that you prefer
         '''
         eff_label_list = []
         eff_mfcc = []
@@ -44,11 +43,16 @@ class DTW_Classifier:
                 continue
         return eff_mfcc, eff_label_list
     
-    def load_target(self, DataListName):
+    def load_target(self, ModelListName):
+        '''
+        Load model data
+        this is the model data for classification
+        :ModelListName: The Model_log.txt path
+        '''
         eff_label_list = []
         eff_mfcc = []
         processer = PreProcessing(512, 128)
-        wav_list, frame_list, mfcc_list, energy_list, zcr_list, endpoint_list, label_list = processer.process(DataListName)
+        wav_list, frame_list, mfcc_list, energy_list, zcr_list, endpoint_list, label_list = processer.process(ModelListName)
         for i in range(len(mfcc_list)):
             temp = processer.effective_feature(mfcc_list[i], endpoint_list[i])
             if endpoint_list[i][1]-endpoint_list[i][0] != 0:
@@ -57,14 +61,7 @@ class DTW_Classifier:
             else:
                 continue
         return eff_mfcc, eff_label_list
-        
-    def classify(self, Data, Label, target_list, target_label_list):
-        distance_list = []
-        for i in range(len(Data)):
-            for j in range(len(target_list)):
-                distance_list.append(dtw(Data[i],target_list[j]))
-            
-
+    
     def dtw(self, x, y):
         """
         Computes Dynamic Time Warping (DTW) of two sequences.
@@ -92,7 +89,7 @@ class DTW_Classifier:
         elif len(y) == 1:
             path = range(len(x)), zeros(len(x))
         else:
-            path = _traceback(D0)
+            path = self._traceback(D0)
         return D1[-1, -1] / sum(D1.shape)
         #return D1[-1, -1] / sum(D1.shape), C, D1, path
 
@@ -111,7 +108,27 @@ class DTW_Classifier:
             p.insert(0, i)
             q.insert(0, j)
         return array(p), array(q)
+        
+    def classify(self, Data, Label, target_list, target_label_list):
+        '''
+        Classify the voice data using DTW
+        
+        '''
+        distance_list = []
+        label = zeros(len(Data))
+        for i in range(len(Data)):
+            temp = self.dtw(Data[i],target_list[0])
+            for j in range(len(target_list)):
+                if temp > self.dtw(Data[i],target_list[j]):
+                    temp = self.dtw(Data[i],target_list[j])
+                    label[i] = target_label_list[j]
+        return label
+                #TODO finished the sorting function and classification function        
 
-
-    def show_accuracy(self, y_pre, y_true, Signal):
-        print(Signal)
+    def show_accuracy(self, y_pre, y_true):
+        acc = 0
+        for i in range(len(y_pre)):
+            if y_pre[i] == int(y_true[i]):
+                acc += 1
+        acc = acc / len(y_pre)
+        print("acc:", acc)
