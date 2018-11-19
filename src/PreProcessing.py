@@ -29,10 +29,10 @@ class PreProcessing:
                 overlap=self.overlap,
                 windowing_method='Hamming'
             )
-            mfcc_feat = FeatureExtractors.mfcc_extractor(wav_data[endpoint[0]*(512-128):endpoint[1]*(512-128)])
             energy = FeatureExtractors.energy(frames)
             zcr = FeatureExtractors.zero_crossing_rate(frames)
             endpoint = self.VAD_advance(energy)
+            mfcc_feat = FeatureExtractors.mfcc_extractor(wav_data)
             return wav_data, frames, mfcc_feat, energy, zcr, endpoint
         elif file_name[-3:] == 'txt':
             self.loader.set_data_list(file_name)
@@ -54,7 +54,7 @@ class PreProcessing:
                 energy = FeatureExtractors.energy(frames)
                 zcr = FeatureExtractors.zero_crossing_rate(frames)
                 endpoint = self.VAD_advance(energy)
-                mfcc_feat = FeatureExtractors.mfcc_extractor(wav_data[endpoint[0]*(512-128):endpoint[1]*(512-128)])
+                mfcc_feat = FeatureExtractors.mfcc_extractor(wav_data)
                 zcr = np.reshape(zcr, [len(zcr)])
                 endpoint = np.reshape(endpoint, [len(endpoint)])
                 wav_list.append(wav_data)
@@ -73,12 +73,14 @@ class PreProcessing:
         energy_queue = Queue()
         zcr_queue = Queue()
         endpoint_queue = Queue()
+        mfcc_queue = Queue()
         queue_dict = {
-            'wave':wav_queue,
-            'frame':frame_queue,
-            'energy':energy_queue,
-            'zcr':zcr_queue,
-            'endpoint':endpoint_queue
+            'wave': wav_queue,
+            'frame': frame_queue,
+            'energy': energy_queue,
+            'zcr': zcr_queue,
+            'endpoint': endpoint_queue,
+            'mfcc': mfcc_queue
         }
         def conv_proc(wav_input, output_dict):
             PRE_FRAME_NUM = 20
@@ -139,6 +141,7 @@ class PreProcessing:
                             energy = FeatureExtractors.energy(frames)
                             zcr = FeatureExtractors.zero_crossing_rate(frames)
                             endpoint = self.VAD_advance(energy)
+                            mfcc = FeatureExtractors.mfcc_extractor(wav_full)
                             zcr = np.reshape(zcr, [len(zcr)])
                             endpoint = np.reshape(endpoint, [len(endpoint)])
                             output_dict['wave'].put(wav_full)
@@ -146,6 +149,7 @@ class PreProcessing:
                             output_dict['energy'].put(energy)
                             output_dict['zcr'].put(zcr)
                             output_dict['endpoint'].put(endpoint)
+                            output_dict['mfcc'].put(mfcc)
                         rec.clear()
                         recording = False
                 if recording:
