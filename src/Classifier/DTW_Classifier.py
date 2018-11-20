@@ -125,6 +125,8 @@ class DTW_Classifier:
         return label
     
     def train(self, Data, Label):
+        #TODO How to train a dtw classifier is unknown till now. We could come up with a idea
+        #about how to select better models to optimize the performance of classifier.
         print("training process in dtw classifier is unnecessary")
     
     def apply(self, Data):
