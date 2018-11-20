@@ -30,13 +30,14 @@ def main():
             while True:
                 zcr = queue_dict['energy'].get(True)
                 ep = queue_dict['endpoint'].get(True)
-                #mfcc = queue_dict['mfcc'].get(True)
+                mfcc = queue_dict['mfcc'].get(True)
                 effective_feature = preprocessor.effective_feature(zcr, ep)
-                #effective_mfcc = preprocessor.effective_feature(mfcc, ep)
+                effective_mfcc = preprocessor.effective_feature(mfcc, ep)
+                print("HERE:", effective_mfcc.shape, effective_feature.shape)
                 if len(effective_feature) == 0:
                     continue
                 effective_feature = preprocessor.reshape(effective_feature, 100)
-                # effective_mfcc = preprocessor.reshape(effective_mfcc, 25)
+                #effective_mfcc = preprocessor.reshape(effective_mfcc, 100)
                 for classifier_name, classifier_class in classifier_classes.items():
                     print(classifier_name)
                     classifier = classifier_class(None)
@@ -45,7 +46,8 @@ def main():
                     print(res)
         except KeyboardInterrupt:
             print('Exit')
-        except Exception:
+        except Exception as e:
+            print("Fucking", e)
             print("Emmmmm")
         finally:
             preprocessor_proc.terminate()
@@ -56,6 +58,7 @@ def main():
         zcr_list, endpoint_list, label_list = preprocessor.process(CONFIG['data list'])
         print('Data set Size:', len(wav_list))
         eff_zcr_list = np.zeros((1, 100))
+        eff_mfcc_list = np.zeros((1, 100))
         eff_label_list = []
         # Todo: Rewrite the relating preprocessor code.
         # Multiple data type mixed. Change the list of np array to pure np array.

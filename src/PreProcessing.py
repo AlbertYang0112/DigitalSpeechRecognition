@@ -16,8 +16,8 @@ class PreProcessing:
         self.overlap = overlap
         self.loader = FileLoader()
         self.recorder = Recorder()
-        plt.ion()
-        plt.figure(2)
+        #plt.ion()
+        #plt.figure(2)
 
     def process(self, file_name):
         file_name = file_name.strip()
@@ -115,7 +115,7 @@ class PreProcessing:
                             state -= 1
                     else:
                         if recording:
-                            plt.clf()
+                            #plt.clf()
                             wav_full = np.concatenate(rec)
                             leading_frame_full = []
                             while not leading_frame.empty():
@@ -126,12 +126,12 @@ class PreProcessing:
                             wav_full = wav_full * 1.0 / np.max(np.abs(wav_full))
                             wav_full = np.where(np.abs(wav_full) < 0.01,
                                                 0, wav_full)
-                            plt.subplot(121)
-                            plt.plot(wav_full)
-                            plt.subplot(122)
-                            plt.plot(leading_frame_full)
-                            plt.draw()
-                            plt.pause(0.001)
+                            #plt.subplot(121)
+                            #plt.plot(wav_full)
+                            #plt.subplot(122)
+                            #plt.plot(leading_frame_full)
+                            #plt.draw()
+                            #plt.pause(0.001)
                             frames = FeatureExtractors.enhance_frame(
                                 wav_data=wav_full,
                                 frame_size=self.frame_size,
@@ -242,7 +242,7 @@ class PreProcessing:
         for i in range(segment_num):
             start, end = int(endpoints[2 * i]), int(endpoints[2 * i + 1])
             feature_list.append(features[start: end])
-        return feature_list
+        return np.array(feature_list)
 
     @staticmethod
     def reshape(Data, shape):
@@ -256,7 +256,7 @@ class PreProcessing:
             x = np.linspace(0, index, index)
             f = interpolate.interp1d(x, data, kind='cubic')
             data_set.append(f(new_shape))
-        return data_set
+        return np.array(data_set)
     
     @staticmethod
     def reshape_1D(Data, shape):
