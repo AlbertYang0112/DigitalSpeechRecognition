@@ -127,7 +127,11 @@ class DTW_Classifier:
     def train(self, Data, Label):
         #TODO How to train a dtw classifier is unknown till now. We could come up with a idea
         #about how to select better models to optimize the performance of classifier.
-        print("training process in dtw classifier is unnecessary")
+        target_list, target_label_list = self.load_target(self.ModelListName)
+        target_list = array(target_list)
+        target_label_list = array(target_label_list)
+        target_list.tofile("target_list.bin")
+        target_label_list.tofile("target_label_list.bin") 
     
     def apply(self, Data):
         '''
@@ -135,7 +139,8 @@ class DTW_Classifier:
         :Data: original data
         Returns the predicted labels of original data.
         '''
-        target_list, target_label_list = self.load_target(self.ModelListName)
+        target_list = fromfile("target_list.bin")
+        target_label_list = fromfile("target_label_list.bin")
         label = self.classify(Data, target_list, target_label_list)
         return label
 
