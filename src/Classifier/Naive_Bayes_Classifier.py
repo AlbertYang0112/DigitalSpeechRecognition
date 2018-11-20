@@ -18,13 +18,11 @@ class Naive_Bayes_Classifier:
     and this is one of them.
     '''
 
-    def __init__(self, DataListName, Type='G'):
+    def __init__(self, DataListName):
         '''
         The type of classifier should be choosed.
         '''
         self.DataListName = '../DataSet/DataList.txt'
-        self.Type = Type
-
 
     def read_data(self, DataListName, FeatureName, shape):
         '''
@@ -98,23 +96,10 @@ class Naive_Bayes_Classifier:
     def train(self, Data, Label):
         '''
         Train Naive Bayes model.
-        There are three different models in this class.
-        You can choose different type of naive bayes classifier by adjusting parameter 'Type'
-        Feature data and labels are needed.
         There are some bugs met in the MultibnomialNB and it seems that this clf and BernoulliNB 
         is not suitable in voice classification task. The GaussianNB is much better than BernoulliNB.
         '''
-        if self.Type[0] == 'G':
-            print('G')
-            clf = GaussianNB(priors=None)
-        elif self.Type[0] == 'M':
-            print('M')
-            clf = MultinomialNB(alpha=1.0, fit_prior=True, class_prior=None)
-        elif self.Type[0] == 'B':
-            print('B')
-            clf = BernoulliNB(alpha=1.0, binarize=0.0, fit_prior=True,class_prior=None)
-        else:
-            clf = GaussianNB(priors=None)
+        clf = GaussianNB(priors=None)
         #x_train = Data
         #y_train = Label
         '''

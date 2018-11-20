@@ -21,8 +21,8 @@ class DTW_Classifier:
         '''
         The type of classifier should be choosed.
         '''
-        self.DataListName = '../DataSet/DataList.txt'
-        self.ModelListName = '../DataSet/ModelList.txt'
+        self.DataListName = DataListName
+        self.ModelListName = ModelListName
 
     def read_data(self, DataListName):
         '''
@@ -84,12 +84,14 @@ class DTW_Classifier:
         for i in range(r):
             for j in range(c):
                 D1[i, j] += min(D0[i, j], D0[i, j+1], D0[i+1, j])
+        '''
         if len(x)==1:
             path = zeros(len(y)), range(len(y))
         elif len(y) == 1:
             path = range(len(x)), zeros(len(x))
         else:
             path = self._traceback(D0)
+        '''
         return D1[-1, -1] / sum(D1.shape)
         #return D1[-1, -1] / sum(D1.shape), C, D1, path
 
@@ -109,12 +111,10 @@ class DTW_Classifier:
             q.insert(0, j)
         return array(p), array(q)
         
-    def classify(self, Data, Label, target_list, target_label_list):
+    def classify(self, Data, target_list, target_label_list):
         '''
         Classify the voice data using DTW
-        
         '''
-        distance_list = []
         label = zeros(len(Data))
         for i in range(len(Data)):
             temp = self.dtw(Data[i],target_list[0])
@@ -123,7 +123,19 @@ class DTW_Classifier:
                     temp = self.dtw(Data[i],target_list[j])
                     label[i] = target_label_list[j]
         return label
-                #TODO finished the sorting function and classification function        
+    
+    def train(self, Data, Label):
+        print("training process in dtw classifier is unnecessary")
+    
+    def apply(self, Data):
+        '''
+        Apply the classifier with given data.
+        :Data: original data
+        Returns the predicted labels of original data.
+        '''
+        target_list, target_label_list = self.load_target(self.ModelListName)
+        label = self.classify(Data, target_list, target_label_list)
+        return label
 
     def show_accuracy(self, y_pre, y_true):
         acc = 0
