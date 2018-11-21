@@ -110,10 +110,10 @@ class Naive_Bayes_Classifier:
         x_train, x_test, y_train, y_test = train_test_split(Data, Label, random_state=0, train_size=0.8)
         clf.fit(x_train, y_train)  # svm classification
         print("training result")
-        print(clf.score(x_train, y_train))  # svm score
+        print(round(clf.score(x_train, y_train), 2))  # svm score
         y_hat = clf.predict(x_train)
         print("validating result")
-        print(clf.score(x_test, y_test))
+        print(round(clf.score(x_test, y_test), 2))
         # y_hat = clf.predict(x_test)
         joblib.dump(clf, "Naive_Bayes_train_model.m")
 

@@ -150,4 +150,4 @@ class DTW_Classifier:
             if y_pre[i] == int(y_true[i]):
                 acc += 1
         acc = acc / len(y_pre)
-        print("acc:", acc)
+        print("acc:", round(acc, 2))
