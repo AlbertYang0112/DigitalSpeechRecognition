@@ -34,15 +34,17 @@ def main():
                 effective_feature = preprocessor.effective_feature(zcr, ep)
                 effective_mfcc = preprocessor.effective_feature(mfcc, ep)
                 print("HERE:", effective_mfcc.shape, effective_feature.shape)
-                if len(effective_feature) == 0:
+                if len(effective_mfcc) == 0:
                     continue
+                effective_mfcc = effective_mfcc.reshape((effective_mfcc.shape[0], -1, 1))
+                print("HERE again:", effective_mfcc.shape, effective_feature.shape)
                 effective_feature = preprocessor.reshape(effective_feature, 100)
-                #effective_mfcc = preprocessor.reshape(effective_mfcc, 100)
+                effective_mfcc = preprocessor.reshape(effective_mfcc, 100)
                 for classifier_name, classifier_class in classifier_classes.items():
                     print(classifier_name)
                     classifier = classifier_class(None)
                     print(1234)
-                    res = classifier.apply(effective_feature)
+                    res = classifier.apply(effective_mfcc)
                     print(res)
         except KeyboardInterrupt:
             print('Exit')
@@ -62,15 +64,25 @@ def main():
         eff_label_list = []
         # Todo: Rewrite the relating preprocessor code.
         # Multiple data type mixed. Change the list of np array to pure np array.
+        #for i in range(len(energy_list)):
+        #    temp = preprocessor.effective_feature(zcr_list[i], endpoint_list[i])
+        #    temp = preprocessor.reshape(temp, 100)
+        #    if len(temp) != 0:
+        #        eff_label_list.append(label_list[i])
+        #    else:
+        #        continue
+        #    eff_zcr_list = np.concatenate((eff_zcr_list, temp), axis=0)
+        #eff_zcr_list = eff_zcr_list[1:]
+
         for i in range(len(energy_list)):
-            temp = preprocessor.effective_feature(zcr_list[i], endpoint_list[i])
+            temp = preprocessor.effective_feature(mfcc_list[i], endpoint_list[i]).reshape((1, -1))
             temp = preprocessor.reshape(temp, 100)
             if len(temp) != 0:
                 eff_label_list.append(label_list[i])
             else:
-                continue 
-            eff_zcr_list = np.concatenate((eff_zcr_list, temp), axis=0)
-        eff_zcr_list = eff_zcr_list[1:]
+                continue
+            eff_mfcc_list = np.concatenate((eff_mfcc_list, temp), axis=0)
+        eff_mfcc_list = eff_mfcc_list[1:]
 
         if CONFIG['argumentation']:
             # Todo: Add data argumentation
@@ -82,7 +94,8 @@ def main():
                     # Todo: Save the model to a dir.
                     print(classifier_name)
                     classifier = classifier_class(None)
-                    classifier.train(eff_zcr_list, eff_label_list)
+                    print(len(eff_mfcc_list), len(eff_label_list))
+                    classifier.train(eff_mfcc_list, eff_label_list)
 
 
 if __name__ == '__main__':
