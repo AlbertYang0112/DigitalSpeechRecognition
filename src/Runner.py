@@ -5,6 +5,7 @@ sys.path.append(lib_path)
 from src.Classifier import Classifier
 from src.PreProcessing import PreProcessing
 import numpy as np
+import matplotlib.pyplot as plt
 
 classifier_classes = Classifier.classifier_dict()
 abspath = os.path.abspath(sys.path[0])
@@ -12,12 +13,14 @@ CONFIG = {
     'frame size': 512,
     'overlap': 128,
     'is training': True,
-    'is streaming': True,
+    'is streaming': False,
     'data list': '../DataSet/DataList_all.txt',
     'classifier': ['all'],
     'argumentation': False
 }
 
+frame_count = np.zeros((101,))
+print(frame_count.shape, frame_count)
 
 def main():
     preprocessor = PreProcessing(frame_size=CONFIG['frame size'],
@@ -39,7 +42,7 @@ def main():
                 effective_mfcc = effective_mfcc.reshape((effective_mfcc.shape[0], -1, 1))
                 print("HERE again:", effective_mfcc.shape, effective_feature.shape)
                 effective_feature = preprocessor.reshape(effective_feature, 100)
-                effective_mfcc = preprocessor.reshape(effective_mfcc, 100)
+                effective_mfcc = preprocessor.reshape(effective_mfcc, 500)
                 for classifier_name, classifier_class in classifier_classes.items():
                     print(classifier_name)
                     classifier = classifier_class(None)
@@ -59,8 +62,8 @@ def main():
         wav_list, frame_list, mfcc_list, energy_list, \
         zcr_list, endpoint_list, label_list = preprocessor.process(CONFIG['data list'])
         print('Data set Size:', len(wav_list))
-        eff_zcr_list = np.zeros((1, 100))
-        eff_mfcc_list = np.zeros((1, 100))
+        eff_zcr_list = np.zeros((1, 500))
+        eff_mfcc_list = np.zeros((1, 500))
         eff_label_list = []
         # Todo: Rewrite the relating preprocessor code.
         # Multiple data type mixed. Change the list of np array to pure np array.
@@ -75,14 +78,30 @@ def main():
         #eff_zcr_list = eff_zcr_list[1:]
 
         for i in range(len(energy_list)):
-            temp = preprocessor.effective_feature(mfcc_list[i], endpoint_list[i]).reshape((1, -1))
-            temp = preprocessor.reshape(temp, 100)
+            if mfcc_list[i].shape[0] > 100:
+                frame_count[100] += 1
+            else:
+                frame_count[mfcc_list[i].shape[0]] += 1
+            if mfcc_list[i].shape[0] < 20:
+                continue
+            #plt.imshow(mfcc_list[i])
+            #plt.title(label_list[i])
+            #plt.xlabel(mfcc_list[i].shape)
+            #plt.show()
+            # temp = preprocessor.effective_feature(mfcc_list[i], endpoint_list[i]).reshape((1, -1))
+            temp = mfcc_list[i].reshape((1, -1))
+            # print("lalalalalalala", temp[i][:20])
+            temp = preprocessor.reshape(temp, 500)
             if len(temp) != 0:
                 eff_label_list.append(label_list[i])
             else:
                 continue
             eff_mfcc_list = np.concatenate((eff_mfcc_list, temp), axis=0)
+        x = np.linspace(1, 102, 101)
+        plt.plot(x, frame_count)
+        plt.show()
         eff_mfcc_list = eff_mfcc_list[1:]
+        print(eff_mfcc_list.shape)
 
         if CONFIG['argumentation']:
             # Todo: Add data argumentation
@@ -94,7 +113,6 @@ def main():
                     # Todo: Save the model to a dir.
                     print(classifier_name)
                     classifier = classifier_class(None)
-                    print(len(eff_mfcc_list), len(eff_label_list))
                     classifier.train(eff_mfcc_list, eff_label_list)
 
 
