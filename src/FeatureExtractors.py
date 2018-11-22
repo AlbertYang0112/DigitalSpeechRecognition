@@ -1,4 +1,5 @@
 import numpy as np
+import matplotlib.pyplot as plt
 from python_speech_features import *
 
 
@@ -60,5 +61,11 @@ class FeatureExtractors:
 
     @staticmethod
     def mfcc_extractor(wav_data):
-        mfcc_feature = mfcc(wav_data, 44100, nfft=2048)
+        mfcc_feature = mfcc(wav_data, 44100, winlen=512/44100, winstep=(512-128)/44100, nfft=512)
+        #plt.subplot(121)
+        #plt.plot(mfcc_feature[0])
+        #fft = np.fft.fft(wav_data[0: 512], n=512)
+        #plt.subplot(122)
+        #plt.plot(fft)
+        #plt.show()
         return mfcc_feature
