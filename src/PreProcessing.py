@@ -54,7 +54,12 @@ class PreProcessing:
                 energy = FeatureExtractors.energy(frames)
                 zcr = FeatureExtractors.zero_crossing_rate(frames)
                 endpoint = self.VAD_advance(energy)
-                mfcc_feat = FeatureExtractors.mfcc_extractor(wav_data)
+                if len(endpoint) == 0:
+                    continue
+                #plt.plot(wav_data)
+                #plt.show()
+                #print((endpoint[1] - endpoint[0]) * (512 - 128) / 44100 * 1000)
+                mfcc_feat = FeatureExtractors.mfcc_extractor(wav_data[endpoint[0] * (512 - 128) : endpoint[1] * (512 - 128)])
                 zcr = np.reshape(zcr, [len(zcr)])
                 endpoint = np.reshape(endpoint, [len(endpoint)])
                 wav_list.append(wav_data)
@@ -88,12 +93,12 @@ class PreProcessing:
             for i in range(10):
                 noise = queue.get(True).astype(np.float32)
                 noise_frames.append(noise)
-                print(noise)
+                #print(noise)
             noise_frames = np.concatenate(noise_frames)
             energy = np.sum(np.square(noise_frames))
             avg = np.average(energy)
             variance = np.var(energy)
-            print(avg)
+            #print(avg)
             threshold = avg + 5 * np.sqrt(variance)
             print("THRESHOLD =", threshold)
             leading_frame = Queue(PRE_FRAME_NUM)
@@ -139,9 +144,12 @@ class PreProcessing:
                                 windowing_method='Hamming'
                             )
                             energy = FeatureExtractors.energy(frames)
-                            zcr = FeatureExtractors.zero_crossing_rate(frames)
                             endpoint = self.VAD_advance(energy)
-                            mfcc = FeatureExtractors.mfcc_extractor(wav_full)
+                            if len(endpoint) == 0:
+                                continue
+                            zcr = FeatureExtractors.zero_crossing_rate(frames)
+                            #mfcc = FeatureExtractors.mfcc_extractor(wav_full)
+                            mfcc = FeatureExtractors.mfcc_extractor(wav_full[endpoint[0] * (512 - 128) : endpoint[1] * (512 - 128)])
                             zcr = np.reshape(zcr, [len(zcr)])
                             endpoint = np.reshape(endpoint, [len(endpoint)])
                             output_dict['wave'].put(wav_full)
