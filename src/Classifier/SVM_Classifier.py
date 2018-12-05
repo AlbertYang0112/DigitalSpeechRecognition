@@ -36,7 +36,7 @@ class SVM_Classifier:
         mfccdata = []
         eff_mfcc = []
         eff_label_list = []
-        processer = PreProcessing(512, 128)
+        processer = PreProcessing(512,128)
         wav_list, frame_list, mfcc_list, energy_list, zcr_list, endpoint_list, label_list = processer.process(DataListName)
         if Feature[0] == 'E':
             for i in range(len(energy_list)):
@@ -52,6 +52,7 @@ class SVM_Classifier:
         elif Feature[0] == 'Z':
             for i in range(len(zcr_list)):
                 temp = processer.effective_feature(zcr_list[i], endpoint_list[i])
+                print(np.shape(temp))
                 temp = processer.reshape(temp, shape)
                 if len(temp) != 0:
                     eff_label_list.append(label_list[i])
@@ -79,6 +80,7 @@ class SVM_Classifier:
             energydata = energydata[1:]
             data = energydata * zcrdata
             return data, eff_label_list
+            
         elif Feature[0] == "M":
             for i in range(len(mfcc_list)):
                 temp = processer.effective_feature(mfcc_list[i], endpoint_list[i])
@@ -108,7 +110,7 @@ class SVM_Classifier:
         Train SVM model
         Feature data and labels are needed
         '''
-        clf = svm.SVC(C=0.4,kernel = 'linear', degree = 3, gamma=20, decision_function_shape='ovr')
+        clf = svm.SVC(C=0.4,kernel = 'poly', degree = 3, gamma=20, decision_function_shape='ovr')
         #x_train = Data
         #y_train = Label
         '''

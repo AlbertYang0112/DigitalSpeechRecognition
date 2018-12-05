@@ -17,7 +17,7 @@ class DTW_Classifier:
     and this is one of them.
     '''
 
-    def __init__(self, DataListName, ModelListName):
+    def __init__(self, DataListName, ModelListName = '../DataSet/ModelList_all.txt'):
         '''
         The type of classifier should be choosed.
         '''
@@ -130,8 +130,8 @@ class DTW_Classifier:
         target_list, target_label_list = self.load_target(self.ModelListName)
         target_list = array(target_list)
         target_label_list = array(target_label_list)
-        target_list.tofile("target_list.bin")
-        target_label_list.tofile("target_label_list.bin") 
+        np.save("target_list.npy",target_list)
+        np.save("target_label_list.npy", target_label_list)
     
     def apply(self, Data):
         '''
@@ -139,8 +139,8 @@ class DTW_Classifier:
         :Data: original data
         Returns the predicted labels of original data.
         '''
-        target_list = fromfile("target_list.bin")
-        target_label_list = fromfile("target_label_list.bin")
+        target_list = np.load("target_list.npy")
+        target_label_list = np.load("target_label_list.npy")
         label = self.classify(Data, target_list, target_label_list)
         return label
 

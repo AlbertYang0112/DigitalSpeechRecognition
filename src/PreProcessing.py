@@ -174,9 +174,10 @@ class PreProcessing:
     # 新增的利用双门限法的语音端点检测
     # 增强了识别能力，可以用于多数字的语音信息的断点识别
     def VAD_advance(self, energy):
-        MEAN = np.sum(energy) / len(energy)
-        High = 0.4 * MEAN  # 语音能量上限
-        Low = 0.05 * MEAN  # 能量下限
+        energy = energy/np.max(energy)
+        MEAN = np.average(energy)
+        High = 0.05*MEAN  # 语音能量上限
+        Low = 0.001*MEAN  # 能量下限
         Data1 = []  # 存放低位能量数据
         Data2 = []  # 存放高位能量数据
         Endpoint = []  # 存放两个节点
@@ -229,6 +230,9 @@ class PreProcessing:
             i += 1
         if len(Endpoint) == 0:
             print("No active voice detected")
+            return []
+        elif Endpoint[1]-Endpoint[0]<5:
+            print("Voice too short")
             return []
         else:
             endpoint = []   

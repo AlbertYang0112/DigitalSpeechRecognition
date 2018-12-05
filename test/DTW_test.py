@@ -11,15 +11,15 @@ Please speak loudly in a quiet place when you build the database.
 '''
 
 foldername = '../DataSet/DataList_all.txt' 
-modelfoldername = '../DataSet/ModelList_all.txt' 
+
 
 '''
 This is the demo of decision DTW classifier
 and the best performance is around 85%
 '''
 
-Classifier = DTW_Classifier(foldername, modelfoldername)
+Classifier = DTW_Classifier(foldername)
 Data, Label = Classifier.read_data(foldername)
-Model, Model_label = Classifier.load_target(modelfoldername)
-result = Classifier.classify(Data, Label, Model, Model_label)
+Classifier.train(Data, Label)
+result = Classifier.apply(Data)
 Classifier.show_accuracy(result, Label)

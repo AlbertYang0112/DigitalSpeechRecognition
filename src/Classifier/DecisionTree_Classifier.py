@@ -39,7 +39,7 @@ class DecisionTree_Classifier:
         energydata = np.zeros((1,shape))
         eff_label_list = []
         processer = PreProcessing(512, 128)
-        wav_list, frame_list, energy_list, zcr_list, endpoint_list, label_list = processer.process(DataListName)
+        wav_list, frame_list, mfcc_list, energy_list, zcr_list, endpoint_list, label_list = processer.process(DataListName)
         if Feature[0] == 'E':
             for i in range(len(energy_list)):
                 temp = processer.effective_feature(energy_list[i], endpoint_list[i])
