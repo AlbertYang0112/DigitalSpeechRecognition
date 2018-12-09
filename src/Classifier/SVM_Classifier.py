@@ -52,7 +52,7 @@ class SVM_Classifier:
         elif Feature[0] == 'Z':
             for i in range(len(zcr_list)):
                 temp = processer.effective_feature(zcr_list[i], endpoint_list[i])
-                print(np.shape(temp))
+                #print(np.shape(temp))
                 temp = processer.reshape(temp, shape)
                 if len(temp) != 0:
                     eff_label_list.append(label_list[i])
