@@ -177,7 +177,7 @@ class PreProcessing:
         energy = energy/np.max(energy)
         MEAN = 0.1
         High = MEAN  # 语音能量上限
-        Low = 0.01*MEAN  # 能量下限
+        Low = 0.05*MEAN  # 能量下限
         Data1 = []  # 存放低位能量数据
         Data2 = []  # 存放高位能量数据
         Endpoint = []  # 存放两个节点
@@ -231,7 +231,7 @@ class PreProcessing:
         if len(Endpoint) == 0:
             print("No active voice detected")
             return []
-        elif Endpoint[1]-Endpoint[0]<5:
+        elif Endpoint[1]-Endpoint[0]<3:
             print("Voice too short")
             return []
         else:
