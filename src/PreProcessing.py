@@ -89,36 +89,44 @@ class PreProcessing:
         }
         def conv_proc(wav_input, output_dict):
             PRE_FRAME_NUM = 20
-            noise_frames = []
+            noise_energy = []
             for i in range(10):
                 noise = queue.get(True).astype(np.float32)
-                noise_frames.append(noise)
-                #print(noise)
-            noise_frames = np.concatenate(noise_frames)
-            energy = np.sum(np.square(noise_frames))
-            avg = np.average(energy)
-            variance = np.var(energy)
-            #print(avg)
-            threshold = avg + 5 * np.sqrt(variance)
+                noise_energy.append(np.sum(noise * noise))
+                print(noise)
+            avg = np.average(noise_energy)
+            variance = np.var(noise_energy)
+            print('Energy:', noise_energy)
+            print('Avg:', avg)
+            print('Var:', variance)
+            threshold = avg + 3 * np.sqrt(variance)
             print("THRESHOLD =", threshold)
             leading_frame = Queue(PRE_FRAME_NUM)
             recording = False
             state = 0
             rec = []
+            cnt = 0
             while True:
                 wav = wav_input.get(True).astype(np.float32)
                 energy = np.sum(np.square(wav))
+                cnt += 1
+                if cnt % 10 == 0:
+                    print("CNT:", cnt, energy, energy - threshold)
                 if energy > threshold:
                     if state < 2:
                         state += 1
+                        print('Pre')
                     else:
                         recording = True
+                        print('On')
                         state = 20
                 else:
                     if state > 0:
                         if recording:
                             state -= 1
+                            print("Post", state)
                     else:
+                        print("Finish")
                         if recording:
                             #plt.clf()
                             wav_full = np.concatenate(rec)

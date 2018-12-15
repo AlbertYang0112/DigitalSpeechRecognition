@@ -13,10 +13,11 @@ CONFIG = {
     'frame size': 512,
     'overlap': 128,
     'is training': True,
-    'is streaming': False,
+    'is streaming': True,
     'data list': '../DataSet/DataList_all.txt',
     'classifier': ['all'],
-    'argumentation': False
+    'argumentation': False,
+    'debug tool': False
 }
 
 frame_count = np.zeros((101,))
@@ -25,6 +26,10 @@ print(frame_count.shape, frame_count)
 def main():
     preprocessor = PreProcessing(frame_size=CONFIG['frame size'],
                                  overlap=CONFIG['overlap'])
+    if CONFIG['debug tool']:
+        plt.ion()
+        plt.figure()
+        plt.show()
     if CONFIG['is streaming']:
         try:
             preprocessor_proc, queue_dict = preprocessor.process_stream()
@@ -33,16 +38,44 @@ def main():
             while True:
                 zcr = queue_dict['energy'].get(True)
                 ep = queue_dict['endpoint'].get(True)
-                mfcc = queue_dict['mfcc'].get(True)
+                wav = queue_dict['wave'].get(True)
+                effective_mfcc = queue_dict['mfcc'].get(True)
+                energy = queue_dict['energy'].get(True)
+                if CONFIG['debug tool']:
+                    plt.clf()
+                    plt.subplot(221)
+                    plt.plot(wav)
+                    plt.title('Input Wave')
+                    plt.axvline(ep[0] * (CONFIG['frame size'] - CONFIG['overlap']), color='r')
+                    plt.axvline(ep[1] * (CONFIG['frame size'] - CONFIG['overlap']), color='r')
+                    plt.subplot(222)
+                    plt.title("MFCC")
+                    plt.imshow(effective_mfcc)
+                    plt.subplot(223)
+                    plt.title('ZCR')
+                    plt.plot(zcr)
+                    plt.axvline(ep[0], color='r')
+                    plt.axvline(ep[1], color='r')
+                    plt.subplot(224)
+                    plt.title('Energy')
+                    plt.plot(energy)
+                    plt.axvline(ep[0], color='r')
+                    plt.axvline(ep[1], color='r')
+                    plt.draw()
+                    plt.pause(0.001)
                 effective_feature = preprocessor.effective_feature(zcr, ep)
-                effective_mfcc = preprocessor.effective_feature(mfcc, ep)
+                #effective_mfcc = preprocessor.effective_feature(mfcc, ep)
                 print("HERE:", effective_mfcc.shape, effective_feature.shape)
                 if len(effective_mfcc) == 0:
                     continue
-                effective_mfcc = effective_mfcc.reshape((effective_mfcc.shape[0], -1, 1))
+                effective_mfcc = effective_mfcc.reshape((1, -1))
                 print("HERE again:", effective_mfcc.shape, effective_feature.shape)
                 effective_feature = preprocessor.reshape(effective_feature, 100)
-                effective_mfcc = preprocessor.reshape(effective_mfcc, 500)
+                if(effective_mfcc.shape[1] >= 1000):
+                    effective_mfcc = effective_mfcc[:, :1000]
+                else:
+                    effective_mfcc = np.concatenate((effective_mfcc, np.zeros((1, 1000 - effective_mfcc.shape[1]))), axis=1)
+                #effective_mfcc = preprocessor.reshape(effective_mfcc, 500)
                 for classifier_name, classifier_class in classifier_classes.items():
                     print(classifier_name)
                     classifier = classifier_class(None)
@@ -63,7 +96,7 @@ def main():
         zcr_list, endpoint_list, label_list = preprocessor.process(CONFIG['data list'])
         print('Data set Size:', len(wav_list))
         eff_zcr_list = np.zeros((1, 500))
-        eff_mfcc_list = np.zeros((1, 500))
+        eff_mfcc_list = np.zeros((1, 1000))
         eff_label_list = []
         # Todo: Rewrite the relating preprocessor code.
         # Multiple data type mixed. Change the list of np array to pure np array.
@@ -90,8 +123,13 @@ def main():
             #plt.show()
             # temp = preprocessor.effective_feature(mfcc_list[i], endpoint_list[i]).reshape((1, -1))
             temp = mfcc_list[i].reshape((1, -1))
-            # print("lalalalalalala", temp[i][:20])
-            temp = preprocessor.reshape(temp, 500)
+            print(temp.shape)
+            # temp = preprocessor.reshape(temp, 500)
+            if(temp.shape[1] >= 1000):
+                temp = temp[:, :1000]
+            else:
+                temp = np.concatenate((temp, np.zeros((1, 1000 - temp.shape[1]))), axis=1)
+            print(temp.shape)
             if len(temp) != 0:
                 eff_label_list.append(label_list[i])
             else:
