@@ -6,6 +6,7 @@ from src.Classifier import Classifier
 from src.PreProcessing import PreProcessing
 import numpy as np
 import matplotlib.pyplot as plt
+import time
 
 classifier_classes = Classifier.classifier_dict()
 abspath = os.path.abspath(sys.path[0])
@@ -36,15 +37,13 @@ def main():
             preprocessor_proc.start()
             preprocessor.recorder.start_streaming()
             while True:
-                zcr = queue_dict['energy'].get(True)
                 ep = queue_dict['endpoint'].get(True)
-                wav = queue_dict['wave'].get(True)
                 effective_mfcc = queue_dict['mfcc'].get(True)
-                energy = queue_dict['energy'].get(True)
+                print("EP", ep)
                 if CONFIG['debug tool']:
                     plt.clf()
                     plt.subplot(221)
-                    plt.plot(wav)
+                    #plt.plot(wav)
                     plt.title('Input Wave')
                     plt.axvline(ep[0] * (CONFIG['frame size'] - CONFIG['overlap']), color='r')
                     plt.axvline(ep[1] * (CONFIG['frame size'] - CONFIG['overlap']), color='r')
@@ -53,33 +52,32 @@ def main():
                     plt.imshow(effective_mfcc)
                     plt.subplot(223)
                     plt.title('ZCR')
-                    plt.plot(zcr)
+                    #plt.plot(zcr)
                     plt.axvline(ep[0], color='r')
                     plt.axvline(ep[1], color='r')
                     plt.subplot(224)
                     plt.title('Energy')
-                    plt.plot(energy)
+                    #plt.plot(energy)
                     plt.axvline(ep[0], color='r')
                     plt.axvline(ep[1], color='r')
                     plt.draw()
                     plt.pause(0.001)
-                effective_feature = preprocessor.effective_feature(zcr, ep)
+                #effective_feature = preprocessor.effective_feature(zcr, ep)
                 #effective_mfcc = preprocessor.effective_feature(mfcc, ep)
-                print("HERE:", effective_mfcc.shape, effective_feature.shape)
+                print("HERE:", effective_mfcc.shape)
                 if len(effective_mfcc) == 0:
                     continue
                 effective_mfcc = effective_mfcc.reshape((1, -1))
-                print("HERE again:", effective_mfcc.shape, effective_feature.shape)
-                effective_feature = preprocessor.reshape(effective_feature, 100)
+                print("HERE again:", effective_mfcc.shape)
                 if(effective_mfcc.shape[1] >= 1000):
                     effective_mfcc = effective_mfcc[:, :1000]
                 else:
                     effective_mfcc = np.concatenate((effective_mfcc, np.zeros((1, 1000 - effective_mfcc.shape[1]))), axis=1)
                 #effective_mfcc = preprocessor.reshape(effective_mfcc, 500)
+                print(time.localtime())
                 for classifier_name, classifier_class in classifier_classes.items():
                     print(classifier_name)
                     classifier = classifier_class(None)
-                    print(1234)
                     res = classifier.apply(effective_mfcc)
                     print(res)
         except KeyboardInterrupt:
@@ -117,19 +115,13 @@ def main():
                 frame_count[mfcc_list[i].shape[0]] += 1
             if mfcc_list[i].shape[0] < 20:
                 continue
-            #plt.imshow(mfcc_list[i])
-            #plt.title(label_list[i])
-            #plt.xlabel(mfcc_list[i].shape)
-            #plt.show()
-            # temp = preprocessor.effective_feature(mfcc_list[i], endpoint_list[i]).reshape((1, -1))
+
             temp = mfcc_list[i].reshape((1, -1))
             print(temp.shape)
-            # temp = preprocessor.reshape(temp, 500)
             if(temp.shape[1] >= 1000):
                 temp = temp[:, :1000]
             else:
                 temp = np.concatenate((temp, np.zeros((1, 1000 - temp.shape[1]))), axis=1)
-            print(temp.shape)
             if len(temp) != 0:
                 eff_label_list.append(label_list[i])
             else:
