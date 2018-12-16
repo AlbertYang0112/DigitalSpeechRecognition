@@ -99,78 +99,89 @@ class PreProcessing:
             print('Energy:', noise_energy)
             print('Avg:', avg)
             print('Var:', variance)
-            threshold = avg + 3 * np.sqrt(variance)
+            threshold = avg + 5 * np.sqrt(variance)
             print("THRESHOLD =", threshold)
             leading_frame = Queue(PRE_FRAME_NUM)
             recording = False
             state = 0
+            tailing_cnt = 0
             rec = []
             cnt = 0
             while True:
                 wav = wav_input.get(True).astype(np.float32)
                 energy = np.sum(np.square(wav))
                 cnt += 1
-                if cnt % 10 == 0:
-                    print("CNT:", cnt, energy, energy - threshold)
+                #if cnt % 10 == 0:
+                #    print("CNT:", cnt, energy, energy - threshold)
+
                 if energy > threshold:
-                    if state < 2:
+                    #print("Fire")
+                    if state < 4:
                         state += 1
-                        print('Pre')
+                        #print('Pre')
                     else:
                         recording = True
-                        print('On')
+                        #print('On')
                         state = 20
                 else:
                     if state > 0:
-                        if recording:
-                            state -= 1
-                            print("Post", state)
+                        state -= 1
+                        #print("Post", state)
                     else:
-                        print("Finish")
+                        #print("Finish")
                         if recording:
+                            print("Get a wave")
                             #plt.clf()
                             wav_full = np.concatenate(rec)
                             leading_frame_full = []
                             while not leading_frame.empty():
+                                #print(leading_frame.qsize())
                                 leading_frame_temp = leading_frame.get(True).astype(np.float32)
                                 leading_frame_full.append(leading_frame_temp)
-                            leading_frame_full = np.concatenate(leading_frame_full)
-                            wav_full = np.concatenate((leading_frame_full, wav_full))
-                            wav_full = wav_full * 1.0 / np.max(np.abs(wav_full))
-                            wav_full = np.where(np.abs(wav_full) < 0.01,
-                                                0, wav_full)
-                            #plt.subplot(121)
-                            #plt.plot(wav_full)
-                            #plt.subplot(122)
-                            #plt.plot(leading_frame_full)
-                            #plt.draw()
-                            #plt.pause(0.001)
-                            frames = FeatureExtractors.enhance_frame(
-                                wav_data=wav_full,
-                                frame_size=self.frame_size,
-                                overlap=self.overlap,
-                                windowing_method='Hamming'
-                            )
-                            energy = FeatureExtractors.energy(frames)
-                            endpoint = self.VAD_advance(energy)
-                            if len(endpoint) == 0:
-                                continue
-                            zcr = FeatureExtractors.zero_crossing_rate(frames)
-                            #mfcc = FeatureExtractors.mfcc_extractor(wav_full)
-                            mfcc = FeatureExtractors.mfcc_extractor(wav_full[endpoint[0] * (512 - 128) : endpoint[1] * (512 - 128)])
-                            zcr = np.reshape(zcr, [len(zcr)])
-                            endpoint = np.reshape(endpoint, [len(endpoint)])
-                            output_dict['wave'].put(wav_full)
-                            output_dict['frame'].put(frames)
-                            output_dict['energy'].put(energy)
-                            output_dict['zcr'].put(zcr)
-                            output_dict['endpoint'].put(endpoint)
-                            output_dict['mfcc'].put(mfcc)
+                            if len(leading_frame_full) != 0:
+                                leading_frame_full = np.concatenate(leading_frame_full)
+                                wav_full = np.concatenate((leading_frame_full, wav_full))
+                                wav_full = wav_full * 1.0 / np.max(np.abs(wav_full))
+                                wav_full = np.where(np.abs(wav_full) < 0.01,
+                                                    0, wav_full)
+                                #plt.subplot(121)
+                                #plt.plot(wav_full)
+                                #plt.subplot(122)
+                                #plt.plot(leading_frame_full)
+                                #plt.draw()
+                                #plt.pause(0.001)
+                                frames = FeatureExtractors.enhance_frame(
+                                    wav_data=wav_full,
+                                    frame_size=self.frame_size,
+                                    overlap=self.overlap,
+                                    windowing_method='Hamming'
+                                )
+                                energy = FeatureExtractors.energy(frames)
+                                endpoint = self.VAD_advance(energy)
+                                if len(endpoint) != 0:
+                                    zcr = FeatureExtractors.zero_crossing_rate(frames)
+                                    #mfcc = FeatureExtractors.mfcc_extractor(wav_full)
+                                    mfcc = FeatureExtractors.mfcc_extractor(wav_full[endpoint[0] * (512 - 128) : endpoint[1] * (512 - 128)])
+                                    zcr = np.reshape(zcr, [len(zcr)])
+                                    endpoint = np.reshape(endpoint, [len(endpoint)])
+                                    output_dict['wave'].put(wav_full)
+                                    output_dict['frame'].put(frames)
+                                    output_dict['energy'].put(energy)
+                                    output_dict['zcr'].put(zcr)
+                                    output_dict['endpoint'].put(endpoint)
+                                    output_dict['mfcc'].put(mfcc)
+                                    print("Fire!")
+                                else:
+                                    print("No EP")
+                                print("Done")
+                            else:
+                                print("Empty??")
                         rec.clear()
                         recording = False
                 if recording:
                     rec.append(wav)
                 else:
+                    #print("Put one")
                     if leading_frame.full():
                         leading_frame.get(True)
                     leading_frame.put(wav)
