@@ -14,11 +14,12 @@ CONFIG = {
     'frame size': 512,
     'overlap': 128,
     'is training': True,
-    'is streaming': False,
+    'is streaming': True,
     'data list': '../DataSet/DataList_all.txt',
     'classifier': ['all'],
     'argumentation': True,
-    'debug tool': False
+    'debug tool': False,
+    'error stat': True
 }
 
 frame_count = np.zeros((101,))
@@ -36,6 +37,7 @@ def main():
             preprocessor_proc, queue_dict = preprocessor.process_stream()
             preprocessor_proc.start()
             preprocessor.recorder.start_streaming()
+            result_stat = {}
             while True:
                 ep = queue_dict['endpoint'].get(True)
                 effective_mfcc = queue_dict['mfcc'].get(True)
@@ -75,12 +77,37 @@ def main():
                     effective_mfcc = np.concatenate((effective_mfcc, np.zeros((1, 1000 - effective_mfcc.shape[1]))), axis=1)
                 #effective_mfcc = preprocessor.reshape(effective_mfcc, 500)
                 print(time.localtime())
+                result = {}
                 for classifier_name, classifier_class in classifier_classes.items():
-                    print(classifier_name)
                     classifier = classifier_class(None)
                     res = classifier.apply(effective_mfcc)
-                    print(res)
+                    result[classifier_name] = int(res[0])
+                    print(classifier_name, int(res[0]))
+                if CONFIG['error stat']:
+                    actual_label = 'a'
+                    while not actual_label.isdigit():
+                        actual_label = input('What does the fox say?')
+                        if actual_label == '-':
+                            actual_label = 11
+                    actual_label = int(actual_label)
+                    for classifier_name, res in result.items():
+                        if classifier_name not in result_stat.keys():
+                            result_stat[classifier_name] = np.zeros((10, 11))
+                        result_stat[classifier_name][res, actual_label] += 1
         except KeyboardInterrupt:
+            if CONFIG['error stat']:
+                i = 1
+                n = len(result_stat)
+                for classifier_name, graph in result_stat.items():
+                    plt.subplot(2, n/2 + 1, i)
+                    print("N",n)
+                    print(graph)
+                    plt.imshow(graph)
+                    plt.title(classifier_name)
+                    plt.xlabel("Expected")
+                    plt.ylabel("Actual")
+                    i += 1
+                plt.show()
             print('Exit')
         except Exception as e:
             print("Fucking", e)
