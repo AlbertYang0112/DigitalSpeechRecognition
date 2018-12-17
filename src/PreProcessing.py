@@ -298,7 +298,20 @@ class PreProcessing:
         f = interpolate.interp1d(x, data, kind='cubic')
         return f(new_shape)
 
+    @staticmethod
+    def volume_argumentation(Data, rate):
+        '''
+        This is data argumentation method for voice data which will randomly change the 
+        volume of voice data by frame.
+        :param Data: origin voice data
+        :param rate: the index that determines the maximum change
+        :return: changed voice data
+        '''
+        for i in range(Data):
+            Data[i] = Data[i]*(1 + np.random.random()*rate)
+        return Data
 
+    
     def print_result(self, filename, frame, energy, zcr, endpoint):
         # Todo: Format the method.
         '''
