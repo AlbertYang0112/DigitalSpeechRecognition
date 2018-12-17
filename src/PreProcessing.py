@@ -343,7 +343,7 @@ class PreProcessing:
         :return: changed voice data
         '''
         for i in range(Data):
-            Data[i] = Data[i]*(1 + np.random.random()*rate)
+            Data[i] = Data[i]*(1 + (np.random.random()*2-1)*rate)
         return Data
 
     
