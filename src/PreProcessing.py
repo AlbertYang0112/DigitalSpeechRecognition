@@ -7,6 +7,8 @@ from src.Recorder import Recorder
 from scipy import interpolate
 from multiprocessing import Queue, Process, set_start_method
 
+TUNE_CHANGE_UPPER_BOUND = 2
+TUNE_CHANGE_LOWER_BOUND = 0.5
 
 class PreProcessing:
     # Todo: Add the data argumentation methods.
@@ -19,7 +21,7 @@ class PreProcessing:
         #plt.ion()
         #plt.figure(2)
 
-    def process(self, file_name):
+    def process(self, file_name, argumentation=False):
         file_name = file_name.strip()
         if file_name[-3:] == 'wav':
             wav_data = self.loader.read_one(file_name)
@@ -45,6 +47,8 @@ class PreProcessing:
             label_list = []
             for i in range(self.loader.data_set_size()):
                 wav_data, label = self.loader.read_next()
+
+
                 frames = FeatureExtractors.enhance_frame(
                     wav_data=wav_data,
                     frame_size=self.frame_size,
@@ -56,9 +60,6 @@ class PreProcessing:
                 endpoint = self.VAD_advance(energy)
                 if len(endpoint) == 0:
                     continue
-                #plt.plot(wav_data)
-                #plt.show()
-                #print((endpoint[1] - endpoint[0]) * (512 - 128) / 44100 * 1000)
                 mfcc_feat = FeatureExtractors.mfcc_extractor(wav_data[endpoint[0] * (512 - 128) : endpoint[1] * (512 - 128)])
                 zcr = np.reshape(zcr, [len(zcr)])
                 endpoint = np.reshape(endpoint, [len(endpoint)])
@@ -69,6 +70,40 @@ class PreProcessing:
                 label_list.append(label)
                 zcr_list.append(zcr)
                 endpoint_list.append(endpoint)
+
+                if argumentation:
+                    tune_change_rate = np.random.random() * \
+                                       (TUNE_CHANGE_UPPER_BOUND - TUNE_CHANGE_LOWER_BOUND) + TUNE_CHANGE_LOWER_BOUND
+                    print("Tune change:", wav_data.shape, tune_change_rate)
+                    tune_changed_data = self.reshape_1D(wav_data, tune_change_rate * wav_data.shape[0])
+
+
+                    frames = FeatureExtractors.enhance_frame(
+                        wav_data=tune_changed_data,
+                        frame_size=self.frame_size,
+                        overlap=self.overlap,
+                        windowing_method='Hamming'
+                    )
+                    energy = FeatureExtractors.energy(frames)
+                    zcr = FeatureExtractors.zero_crossing_rate(frames)
+                    endpoint = self.VAD_advance(energy)
+                    if len(endpoint) == 0:
+                        continue
+                    try:
+                        mfcc_feat = FeatureExtractors.mfcc_extractor(tune_changed_data[endpoint[0] * (512 - 128) : endpoint[1] * (512 - 128)])
+                    except Exception as e:
+                        print("Fucking Exception:", e)
+                        print(endpoint)
+                    zcr = np.reshape(zcr, [len(zcr)])
+                    endpoint = np.reshape(endpoint, [len(endpoint)])
+                    wav_list.append(tune_changed_data)
+                    frame_list.append(frames)
+                    mfcc_list.append(mfcc_feat)
+                    energy_list.append(energy)
+                    label_list.append(label)
+                    zcr_list.append(zcr)
+                    endpoint_list.append(endpoint)
+
             return wav_list, frame_list, mfcc_list, energy_list, zcr_list, endpoint_list, label_list
 
     def process_stream(self):

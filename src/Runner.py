@@ -14,10 +14,10 @@ CONFIG = {
     'frame size': 512,
     'overlap': 128,
     'is training': True,
-    'is streaming': True,
+    'is streaming': False,
     'data list': '../DataSet/DataList_all.txt',
     'classifier': ['all'],
-    'argumentation': False,
+    'argumentation': True,
     'debug tool': False
 }
 
@@ -91,7 +91,7 @@ def main():
             exit()
     else:
         wav_list, frame_list, mfcc_list, energy_list, \
-        zcr_list, endpoint_list, label_list = preprocessor.process(CONFIG['data list'])
+        zcr_list, endpoint_list, label_list = preprocessor.process(CONFIG['data list'], CONFIG['argumentation'])
         print('Data set Size:', len(wav_list))
         eff_zcr_list = np.zeros((1, 500))
         eff_mfcc_list = np.zeros((1, 1000))
@@ -133,9 +133,6 @@ def main():
         eff_mfcc_list = eff_mfcc_list[1:]
         print(eff_mfcc_list.shape)
 
-        if CONFIG['argumentation']:
-            # Todo: Add data argumentation
-            raise NotImplementedError
         if 'all' in CONFIG['classifier']:
             for classifier_name, classifier_class in classifier_classes.items():
                 if CONFIG['is training']:
