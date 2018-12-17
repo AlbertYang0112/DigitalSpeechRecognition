@@ -7,8 +7,13 @@ from src.Recorder import Recorder
 from scipy import interpolate
 from multiprocessing import Queue, Process, set_start_method
 
-TUNE_CHANGE_UPPER_BOUND = 2
-TUNE_CHANGE_LOWER_BOUND = 0.5
+TUNE_CHANGE_UPPER_BOUND = 1.5
+TUNE_CHANGE_LOWER_BOUND = 0.75
+TUNE_CHANGE_PROBABILITY = 0.5
+
+VOLUME_CHANGE_UPPER_BOUND = 1.5
+VOLUME_CHANGE_LOWER_BOUND = 0.75
+VOLUME_CHANGE_PROBABILITY = 0.5
 
 class PreProcessing:
     # Todo: Add the data argumentation methods.
@@ -72,37 +77,47 @@ class PreProcessing:
                 endpoint_list.append(endpoint)
 
                 if argumentation:
-                    tune_change_rate = np.random.random() * \
-                                       (TUNE_CHANGE_UPPER_BOUND - TUNE_CHANGE_LOWER_BOUND) + TUNE_CHANGE_LOWER_BOUND
-                    print("Tune change:", wav_data.shape, tune_change_rate)
-                    tune_changed_data = self.reshape_1D(wav_data, tune_change_rate * wav_data.shape[0])
+                    argumentation_happened = False
+                    if np.random.random() < TUNE_CHANGE_PROBABILITY:
+                        tune_change_rate = np.random.random() * \
+                                           (TUNE_CHANGE_UPPER_BOUND - TUNE_CHANGE_LOWER_BOUND) + TUNE_CHANGE_LOWER_BOUND
+                        print("Tune change:", wav_data.shape, tune_change_rate)
+                        wav_data = self.reshape_1D(wav_data, tune_change_rate * wav_data.shape[0])
+                        frames = FeatureExtractors.enhance_frame(
+                            wav_data=wav_data,
+                            frame_size=self.frame_size,
+                            overlap=self.overlap,
+                            windowing_method='Hamming'
+                        )
+                        print("Tune Change!")
+                        argumentation_happened = True
 
+                    if np.random.random() < VOLUME_CHANGE_PROBABILITY:
+                        frames = self.volume_argumentation(frames)
+                        argumentation_happened = True
+                        print("Volume Change!")
 
-                    frames = FeatureExtractors.enhance_frame(
-                        wav_data=tune_changed_data,
-                        frame_size=self.frame_size,
-                        overlap=self.overlap,
-                        windowing_method='Hamming'
-                    )
-                    energy = FeatureExtractors.energy(frames)
-                    zcr = FeatureExtractors.zero_crossing_rate(frames)
-                    endpoint = self.VAD_advance(energy)
-                    if len(endpoint) == 0:
-                        continue
-                    try:
-                        mfcc_feat = FeatureExtractors.mfcc_extractor(tune_changed_data[endpoint[0] * (512 - 128) : endpoint[1] * (512 - 128)])
-                    except Exception as e:
-                        print("Fucking Exception:", e)
-                        print(endpoint)
-                    zcr = np.reshape(zcr, [len(zcr)])
-                    endpoint = np.reshape(endpoint, [len(endpoint)])
-                    wav_list.append(tune_changed_data)
-                    frame_list.append(frames)
-                    mfcc_list.append(mfcc_feat)
-                    energy_list.append(energy)
-                    label_list.append(label)
-                    zcr_list.append(zcr)
-                    endpoint_list.append(endpoint)
+                    if argumentation_happened:
+                        print("Write into!")
+                        energy = FeatureExtractors.energy(frames)
+                        zcr = FeatureExtractors.zero_crossing_rate(frames)
+                        endpoint = self.VAD_advance(energy)
+                        if len(endpoint) == 0:
+                            continue
+                        try:
+                            mfcc_feat = FeatureExtractors.mfcc_extractor(wav_data[endpoint[0] * (512 - 128) : endpoint[1] * (512 - 128)])
+                        except Exception as e:
+                            print("Fucking Exception:", e)
+                            print(endpoint)
+                        zcr = np.reshape(zcr, [len(zcr)])
+                        endpoint = np.reshape(endpoint, [len(endpoint)])
+                        wav_list.append(wav_data)
+                        frame_list.append(frames)
+                        mfcc_list.append(mfcc_feat)
+                        energy_list.append(energy)
+                        label_list.append(label)
+                        zcr_list.append(zcr)
+                        endpoint_list.append(endpoint)
 
             return wav_list, frame_list, mfcc_list, energy_list, zcr_list, endpoint_list, label_list
 
@@ -134,7 +149,7 @@ class PreProcessing:
             print('Energy:', noise_energy)
             print('Avg:', avg)
             print('Var:', variance)
-            threshold = avg + 5 * np.sqrt(variance)
+            threshold = avg + 7 * np.sqrt(variance)
             print("THRESHOLD =", threshold)
             leading_frame = Queue(PRE_FRAME_NUM)
             recording = False
@@ -334,7 +349,7 @@ class PreProcessing:
         return f(new_shape)
 
     @staticmethod
-    def volume_argumentation(Data, rate):
+    def volume_argumentation(Data):
         '''
         This is data argumentation method for voice data which will randomly change the 
         volume of voice data by frame.
@@ -342,8 +357,10 @@ class PreProcessing:
         :param rate: the index that determines the maximum change
         :return: changed voice data
         '''
-        for i in range(Data):
-            Data[i] = Data[i]*(1 + (np.random.random()*2-1)*rate)
+        for i in range(len(Data)):
+            Data[i] = Data[i] * \
+                      (np.random.random() *
+                       (VOLUME_CHANGE_UPPER_BOUND - VOLUME_CHANGE_LOWER_BOUND) + VOLUME_CHANGE_LOWER_BOUND)
         return Data
 
     

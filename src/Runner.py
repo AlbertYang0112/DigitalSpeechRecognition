@@ -88,13 +88,18 @@ def main():
                     while not actual_label.isdigit():
                         actual_label = input('What does the fox say?')
                         if actual_label == '-':
-                            actual_label = 11
+                            actual_label = '10'
                     actual_label = int(actual_label)
                     for classifier_name, res in result.items():
                         if classifier_name not in result_stat.keys():
                             result_stat[classifier_name] = np.zeros((10, 11))
                         result_stat[classifier_name][res, actual_label] += 1
         except KeyboardInterrupt:
+            print('Exit')
+        except Exception as e:
+            print("Fucking", e)
+            print("Emmmmm")
+        finally:
             if CONFIG['error stat']:
                 i = 1
                 n = len(result_stat)
@@ -108,11 +113,6 @@ def main():
                     plt.ylabel("Actual")
                     i += 1
                 plt.show()
-            print('Exit')
-        except Exception as e:
-            print("Fucking", e)
-            print("Emmmmm")
-        finally:
             preprocessor_proc.terminate()
             del preprocessor
             exit()
