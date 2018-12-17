@@ -80,9 +80,16 @@ def main():
                 result = {}
                 for classifier_name, classifier_class in classifier_classes.items():
                     classifier = classifier_class(None)
-                    res = classifier.apply(effective_mfcc)
-                    result[classifier_name] = int(res[0])
-                    print(classifier_name, int(res[0]))
+                    print(effective_mfcc.shape)
+                    dataIn = np.concatenate((effective_mfcc,
+                                             np.concatenate((effective_mfcc[:, :750], np.zeros((effective_mfcc.shape[0],250))), axis=1),
+                                             np.concatenate((np.zeros((effective_mfcc.shape[0], 250)), effective_mfcc[:, 250:]), axis=1),
+                                             ), axis=0)
+                    res = classifier.apply(dataIn)
+                    res = list(map(int, res))
+                    res = np.argmax(np.bincount(res))
+                    result[classifier_name] = res
+                    print(classifier_name, res)
                 if CONFIG['error stat']:
                     actual_label = 'a'
                     while not actual_label.isdigit():
@@ -94,6 +101,10 @@ def main():
                         if classifier_name not in result_stat.keys():
                             result_stat[classifier_name] = np.zeros((10, 11))
                         result_stat[classifier_name][res, actual_label] += 1
+                    while not queue_dict['endpoint'].empty():
+                        queue_dict['endpoint'].get(False)
+                        queue_dict['mfcc'].get(False)
+
         except KeyboardInterrupt:
             print('Exit')
         except Exception as e:
@@ -105,8 +116,6 @@ def main():
                 n = len(result_stat)
                 for classifier_name, graph in result_stat.items():
                     plt.subplot(2, n/2 + 1, i)
-                    print("N",n)
-                    print(graph)
                     plt.imshow(graph)
                     plt.title(classifier_name)
                     plt.xlabel("Expected")
