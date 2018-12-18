@@ -11,8 +11,8 @@ TUNE_CHANGE_UPPER_BOUND = 1.5
 TUNE_CHANGE_LOWER_BOUND = 0.75
 TUNE_CHANGE_PROBABILITY = 0.5
 
-VOLUME_CHANGE_UPPER_BOUND = 1.5
-VOLUME_CHANGE_LOWER_BOUND = 0.75
+VOLUME_CHANGE_UPPER_BOUND = 1.1
+VOLUME_CHANGE_LOWER_BOUND = 0.9
 VOLUME_CHANGE_PROBABILITY = 0.5
 
 class PreProcessing:
@@ -41,6 +41,7 @@ class PreProcessing:
             mfcc_feat = FeatureExtractors.mfcc_extractor(wav_data)
             return wav_data, frames, mfcc_feat, energy, zcr, endpoint
         elif file_name[-3:] == 'txt':
+            label_count = [0 for i in range(10)]
             self.loader.set_data_list(file_name)
             wav_list = []
             frame_list = []
@@ -67,6 +68,18 @@ class PreProcessing:
                 mfcc_feat = FeatureExtractors.mfcc_extractor(wav_data[endpoint[0] * (512 - 128) : endpoint[1] * (512 - 128)])
                 zcr = np.reshape(zcr, [len(zcr)])
                 endpoint = np.reshape(endpoint, [len(endpoint)])
+                if label == '3' and np.random.random() < 0.1:
+                    label_count[3] += 1
+                    wav_list.append(wav_data)
+                    frame_list.append(frames)
+                    mfcc_list.append(mfcc_feat)
+                    energy_list.append(energy)
+                    label_list.append(label)
+                    zcr_list.append(zcr)
+                    endpoint_list.append(endpoint)
+
+                label_count[int(label)] += 1
+
                 wav_list.append(wav_data)
                 frame_list.append(frames)
                 mfcc_list.append(mfcc_feat)
@@ -80,7 +93,7 @@ class PreProcessing:
                     if np.random.random() < TUNE_CHANGE_PROBABILITY:
                         tune_change_rate = np.random.random() * \
                                            (TUNE_CHANGE_UPPER_BOUND - TUNE_CHANGE_LOWER_BOUND) + TUNE_CHANGE_LOWER_BOUND
-                        print("Tune change:", wav_data.shape, tune_change_rate)
+                        #print("Tune change:", wav_data.shape, tune_change_rate)
                         wav_data = self.reshape_1D(wav_data, tune_change_rate * wav_data.shape[0])
                         frames = FeatureExtractors.enhance_frame(
                             wav_data=wav_data,
@@ -88,16 +101,16 @@ class PreProcessing:
                             overlap=self.overlap,
                             windowing_method='Hamming'
                         )
-                        print("Tune Change!")
+                        #print("Tune Change!")
                         argumentation_happened = True
 
                     if np.random.random() < VOLUME_CHANGE_PROBABILITY:
                         frames = self.volume_argumentation(frames)
                         argumentation_happened = True
-                        print("Volume Change!")
+                        #print("Volume Change!")
 
                     if argumentation_happened:
-                        print("Write into!")
+                        #print("Write into!")
                         energy = FeatureExtractors.energy(frames)
                         zcr = FeatureExtractors.zero_crossing_rate(frames)
                         endpoint = self.VAD_advance(energy)
@@ -118,6 +131,7 @@ class PreProcessing:
                         zcr_list.append(zcr)
                         endpoint_list.append(endpoint)
 
+            print("Label Count:", label_count)
             return wav_list, frame_list, mfcc_list, energy_list, zcr_list, endpoint_list, label_list
 
     def process_stream(self):
@@ -137,7 +151,7 @@ class PreProcessing:
             'mfcc': mfcc_queue
         }
         def conv_proc(wav_input, output_dict):
-            PRE_FRAME_NUM = 20
+            PRE_FRAME_NUM = 10
             noise_energy = []
             for i in range(10):
                 noise = queue.get(True).astype(np.float32)
@@ -160,26 +174,18 @@ class PreProcessing:
                 wav = wav_input.get(True).astype(np.float32)
                 energy = np.sum(np.square(wav))
                 cnt += 1
-                #if cnt % 10 == 0:
-                #    print("CNT:", cnt, energy, energy - threshold)
 
                 if energy > threshold:
-                    #print("Fire")
                     if state < 4:
                         state += 1
-                        #print('Pre')
                     else:
                         recording = True
-                        #print('On')
                         state = 20
                 else:
                     if state > 0:
                         state -= 1
-                        #print("Post", state)
                     else:
-                        #print("Finish")
                         if recording:
-                            print("Get a wave")
                             #plt.clf()
                             wav_full = np.concatenate(rec)
                             leading_frame_full = []
@@ -222,7 +228,6 @@ class PreProcessing:
                                     print("Fire!")
                                 else:
                                     print("No EP")
-                                print("Done")
                             else:
                                 print("Empty??")
                         rec.clear()
@@ -230,7 +235,6 @@ class PreProcessing:
                 if recording:
                     rec.append(wav)
                 else:
-                    #print("Put one")
                     if leading_frame.full():
                         leading_frame.get(True)
                     leading_frame.put(wav)
@@ -245,7 +249,7 @@ class PreProcessing:
             'mfcc': mfcc_queue
         }
         def conv_proc(wav_input, output_dict):
-            PRE_FRAME_NUM = 20
+            PRE_FRAME_NUM = 5
             noise_energy = []
             for i in range(10):
                 noise = queue.get(True).astype(np.float32)
@@ -279,7 +283,7 @@ class PreProcessing:
                     else:
                         recording = True
                         print('Voice Stream Start')
-                        state = 20
+                        state = 8
                 else:
                     if state > 0:
                         state -= 1

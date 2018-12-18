@@ -14,14 +14,15 @@ abspath = os.path.abspath(sys.path[0])
 CONFIG = {
     'frame size': 512,
     'overlap': 128,
+    'sample rate': 44100,
     'is training': True,
     'is streaming': True,
-    'continuous stream': True,
+    'continuous stream': False,
     'data list': '../DataSet/DataList_all.txt',
-    'classifier': ['SVM', 'KNN'],
+    'classifier': ['SVM', 'KNN', 'all'],
     'argumentation': True,
     'debug tool': True,
-    'error stat': False
+    'error stat': True
 }
 
 frame_count = np.zeros((101,))
@@ -46,11 +47,11 @@ def main():
                 while True:
                     ep = queue_dict['endpoint'].get(True)
                     effective_mfcc = queue_dict['mfcc'].get(True)
-                    print("EP", ep)
                     if CONFIG['debug tool']:
+                        wav = queue_dict['wave'].get(True)
                         plt.clf()
                         plt.subplot(221)
-                        #plt.plot(wav)
+                        plt.plot(wav)
                         plt.title('Input Wave')
                         plt.axvline(ep[0] * (CONFIG['frame size'] - CONFIG['overlap']), color='r')
                         plt.axvline(ep[1] * (CONFIG['frame size'] - CONFIG['overlap']), color='r')
@@ -59,41 +60,44 @@ def main():
                         plt.imshow(effective_mfcc)
                         plt.subplot(223)
                         plt.title('ZCR')
-                        #plt.plot(zcr)
+                        zcr = queue_dict['zcr'].get(True)
+                        plt.plot(zcr)
                         plt.axvline(ep[0], color='r')
                         plt.axvline(ep[1], color='r')
                         plt.subplot(224)
                         plt.title('Energy')
-                        #plt.plot(energy)
+                        energy = queue_dict['energy'].get(True)
+                        plt.plot(energy)
                         plt.axvline(ep[0], color='r')
                         plt.axvline(ep[1], color='r')
                         plt.draw()
                         plt.pause(0.001)
                     #effective_feature = preprocessor.effective_feature(zcr, ep)
                     #effective_mfcc = preprocessor.effective_feature(mfcc, ep)
-                    print("HERE:", effective_mfcc.shape)
+                    print("LENGTH:",
+                          round(effective_mfcc.shape[0] *
+                          (CONFIG['frame size'] - CONFIG['overlap']) / CONFIG['sample rate'] * 1000, 1),
+                          'ms')
                     if len(effective_mfcc) == 0:
                         continue
                     effective_mfcc = effective_mfcc.reshape((1, -1))
-                    print("HERE again:", effective_mfcc.shape)
-                    if(effective_mfcc.shape[1] >= 988):
-                        effective_mfcc = effective_mfcc[:, :988]
+                    if(effective_mfcc.shape[1] >= 1092):
+                        effective_mfcc = effective_mfcc[:, :1092]
                     else:
-                        effective_mfcc = np.concatenate((effective_mfcc, np.zeros((1, 988 - effective_mfcc.shape[1]))), axis=1)
-                    #effective_mfcc = preprocessor.reshape(effective_mfcc, 500)
-                    print(time.localtime())
+                        effective_mfcc = np.concatenate((effective_mfcc, np.zeros((1, 1092 - effective_mfcc.shape[1]))), axis=1)
                     result = {}
                     for classifier_name, classifier_class in classifier_classes.items():
                         if 'all' in CONFIG['classifier'] or classifier_name in CONFIG['classifier']:
                             classifier = classifier_class(None)
-                            print(effective_mfcc.shape)
                             dataIn = np.concatenate((effective_mfcc,
-                                                     np.concatenate((effective_mfcc[:, :741], np.zeros((effective_mfcc.shape[0],247))), axis=1),
-                                                     np.concatenate((np.zeros((effective_mfcc.shape[0], 247)), effective_mfcc[:, 247:]), axis=1),
+                                                     np.concatenate((effective_mfcc[:, :741], np.zeros((effective_mfcc.shape[0], 351))), axis=1),
+                                                     np.concatenate((np.zeros((effective_mfcc.shape[0], 351)), effective_mfcc[:, 351:]), axis=1),
                                                      ), axis=0)
-                            res = classifier.apply(dataIn)
-                            res = list(map(int, res))
+                            raw_res = classifier.apply(dataIn)
+                            res = list(map(int, raw_res))
                             res = np.argmax(np.bincount(res))
+                            if res == 4:
+                                print(raw_res)
                             result[classifier_name] = res
                             print(classifier_name, res)
                     if CONFIG['error stat']:
@@ -145,8 +149,12 @@ def main():
                         plt.figure(1)
                         if res_percent['KNN'][-1] > 70 and res_percent['SVM'][-1] > 70:
                             plt.clf()
+                            plt.subplot(121)
                             plt.plot(res_filt['KNN'], 'r')
                             plt.plot(res_filt['SVM'], 'b')
+                        plt.subplot(122)
+                        plt.plot(res_list['KNN'], 'r')
+                        plt.plot(res_list['SVM'], 'b')
                         plt.figure(2)
                         plt.clf()
                         plt.plot(res_percent['KNN'], 'r')
@@ -165,7 +173,8 @@ def main():
                 for classifier_name, graph in result_stat.items():
                     if 'all' in CONFIG['classifier'] or classifier_name in CONFIG['classifier']:
                         plt.subplot(2, n/2 + 1, i)
-                        plt.imshow(graph)
+                        plt.imshow(graph, cmap=plt.get_cmap('hot'))
+                        plt.colorbar()
                         plt.title(classifier_name)
                         plt.xlabel("Expected")
                         plt.ylabel("Actual")
@@ -179,19 +188,8 @@ def main():
         zcr_list, endpoint_list, label_list = preprocessor.process(CONFIG['data list'], CONFIG['argumentation'])
         print('Data set Size:', len(wav_list))
         eff_zcr_list = np.zeros((1, 500))
-        eff_mfcc_list = np.zeros((1, 988))
+        eff_mfcc_list = np.zeros((1, 1092))
         eff_label_list = []
-        # Todo: Rewrite the relating preprocessor code.
-        # Multiple data type mixed. Change the list of np array to pure np array.
-        #for i in range(len(energy_list)):
-        #    temp = preprocessor.effective_feature(zcr_list[i], endpoint_list[i])
-        #    temp = preprocessor.reshape(temp, 100)
-        #    if len(temp) != 0:
-        #        eff_label_list.append(label_list[i])
-        #    else:
-        #        continue
-        #    eff_zcr_list = np.concatenate((eff_zcr_list, temp), axis=0)
-        #eff_zcr_list = eff_zcr_list[1:]
 
         for i in range(len(energy_list)):
             if mfcc_list[i].shape[0] > 100:
@@ -202,25 +200,24 @@ def main():
                 continue
 
             temp = mfcc_list[i].reshape((1, -1))
-            print(temp.shape)
-            if(temp.shape[1] >= 988):
-                temp = temp[:, :988]
+            if(temp.shape[1] >= 1092):
+                temp = temp[:, :1092]
             else:
-                temp = np.concatenate((temp, np.zeros((1, 988 - temp.shape[1]))), axis=1)
+                temp = np.concatenate((temp, np.zeros((1, 1092 - temp.shape[1]))), axis=1)
             if len(temp) != 0:
                 eff_label_list.append(label_list[i])
             else:
                 continue
             eff_mfcc_list = np.concatenate((eff_mfcc_list, temp), axis=0)
-        x = np.linspace(1, 102, 101)
+        x = np.linspace(1, 102 * 13, 101)
         plt.plot(x, frame_count)
         plt.show()
         eff_mfcc_list = eff_mfcc_list[1:]
         print(eff_mfcc_list.shape)
 
-        if 'all' in CONFIG['classifier']:
-            for classifier_name, classifier_class in classifier_classes.items():
-                if CONFIG['is training']:
+        for classifier_name, classifier_class in classifier_classes.items():
+            if CONFIG['is training']:
+                if 'all' in CONFIG['classifier'] or classifier_name in CONFIG['classifier']:
                     # Todo: Print training result and validation result
                     # Todo: Save the model to a dir.
                     print(classifier_name)
