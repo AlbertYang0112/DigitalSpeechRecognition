@@ -17,7 +17,6 @@ VOLUME_CHANGE_PROBABILITY = 0.5
 
 class PreProcessing:
     # Todo: Add the data argumentation methods.
-    # Todo: Add the stream supporting methods.
     def __init__(self, frame_size, overlap):
         self.frame_size = frame_size
         self.overlap = overlap
@@ -238,6 +237,73 @@ class PreProcessing:
 
         proc = Process(target=conv_proc, args=(queue, queue_dict))
         return proc, queue_dict
+
+    def process_continuous_stream(self):
+        queue = self.recorder.stream_queue
+        mfcc_queue = Queue()
+        queue_dict = {
+            'mfcc': mfcc_queue
+        }
+        def conv_proc(wav_input, output_dict):
+            PRE_FRAME_NUM = 20
+            noise_energy = []
+            for i in range(10):
+                noise = queue.get(True).astype(np.float32)
+                noise_energy.append(np.sum(noise * noise))
+                #print(noise)
+            avg = np.average(noise_energy)
+            variance = np.var(noise_energy)
+            print('Energy:', noise_energy)
+            print('Avg:', avg)
+            print('Var:', variance)
+            threshold = avg + 10 * np.sqrt(variance)
+            print("THRESHOLD =", threshold)
+            leading_frame = Queue(PRE_FRAME_NUM)
+            recording = False
+            state = 0
+            tailing_cnt = 0
+            rec = []
+            cnt = 0
+            while True:
+                wav = wav_input.get(True).astype(np.float32)
+                energy = np.sum(np.square(wav))
+                cnt += 1
+                #if cnt % 10 == 0:
+                #    print("CNT:", cnt, energy, energy - threshold)
+
+                if energy > threshold:
+                    #print("Fire")
+                    if state < 4:
+                        state += 1
+                        #print('Pre')
+                    else:
+                        recording = True
+                        print('Voice Stream Start')
+                        state = 20
+                else:
+                    if state > 0:
+                        state -= 1
+                        #print("Post", state)
+                    else:
+                        #print("Finish")
+                        if recording:
+                            print("Voice Stream Paused")
+                        rec.clear()
+                        recording = False
+                if recording:
+                    while not leading_frame.empty():
+                        mfcc = FeatureExtractors.mfcc_extractor(leading_frame.get(True))
+                        output_dict['mfcc'].put(mfcc)
+                    mfcc = FeatureExtractors.mfcc_extractor(wav)
+                    output_dict['mfcc'].put(mfcc)
+                else:
+                    if leading_frame.full():
+                        leading_frame.get(True)
+                    leading_frame.put(wav)
+
+        proc = Process(target=conv_proc, args=(queue, queue_dict))
+        return proc, queue_dict
+
 
     # Todo: Remove Chinese comments.
     # 新增的利用双门限法的语音端点检测
