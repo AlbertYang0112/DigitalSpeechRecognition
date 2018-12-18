@@ -33,7 +33,8 @@ def main():
                                  overlap=CONFIG['overlap'])
     if CONFIG['debug tool']:
         plt.ion()
-        plt.figure()
+        plt.figure(1)
+        plt.figure(2)
         plt.show()
     if CONFIG['is streaming']:
         try:
@@ -117,9 +118,9 @@ def main():
                 result_stat = {}
                 mfcc_buffer = np.zeros((1, 988))
                 frame_cnt = 0
-                last_res = {"KNN": 0, "SVM": 0}
                 res_list = {"KNN": [], "SVM": []}
                 res_filt = {"KNN": [], "SVM": []}
+                res_percent = {"KNN": [], "SVM": []}
                 while True:
                     mfcc = queue_dict['mfcc'].get(True)
                     print("Raw mfcc shape =", mfcc.shape)
@@ -134,11 +135,22 @@ def main():
                             print(classifier_name, res)
                             res_list[classifier_name].append(res)
                             res_filt[classifier_name].append(np.argmax(np.bincount(res_list[classifier_name][-20:])))
+                            res_percent[classifier_name].append(
+                                np.count_nonzero(
+                                    np.array(res_list[classifier_name][-20:]) == res_filt[classifier_name][-1]
+                                ) * 5
+                            )
                     frame_cnt += 1
                     if frame_cnt % 20 == 0:
+                        plt.figure(1)
+                        if res_percent['KNN'][-1] > 70 and res_percent['SVM'][-1] > 70:
+                            plt.clf()
+                            plt.plot(res_filt['KNN'], 'r')
+                            plt.plot(res_filt['SVM'], 'b')
+                        plt.figure(2)
                         plt.clf()
-                        plt.plot(res_filt['KNN'], 'r')
-                        plt.plot(res_filt['SVM'], 'b')
+                        plt.plot(res_percent['KNN'], 'r')
+                        plt.plot(res_percent['SVM'], 'b')
                         plt.pause(0.001)
 
         except KeyboardInterrupt:
