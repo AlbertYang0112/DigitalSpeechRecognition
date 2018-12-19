@@ -19,10 +19,10 @@ CONFIG = {
     'is streaming': True,
     'continuous stream': False,
     'data list': '../DataSet/DataList_all.txt',
-    'classifier': ['SVM', 'KNN', 'all'],
+    'classifier': ['SVM', 'KNN'],
     'argumentation': True,
-    'debug tool': True,
-    'error stat': True
+    'debug tool': False,
+    'error stat': False
 }
 
 frame_count = np.zeros((101,))
@@ -33,9 +33,9 @@ def main():
     preprocessor = PreProcessing(frame_size=CONFIG['frame size'],
                                  overlap=CONFIG['overlap'])
     if CONFIG['debug tool']:
-        plt.ion()
         plt.figure(1)
         plt.figure(2)
+        plt.ion()
         plt.show()
     if CONFIG['is streaming']:
         try:
@@ -120,11 +120,11 @@ def main():
                 preprocessor_proc.start()
                 preprocessor.recorder.start_streaming()
                 result_stat = {}
-                mfcc_buffer = np.zeros((1, 988))
+                mfcc_buffer = np.zeros((1, 1092))
                 frame_cnt = 0
-                res_list = {"KNN": [], "SVM": []}
-                res_filt = {"KNN": [], "SVM": []}
-                res_percent = {"KNN": [], "SVM": []}
+                res_list = {"KNN": [], "SVM": [], "naive_bayes": [], "random_forest": [], "Decision_Tree": []}
+                res_filt = {"KNN": [], "SVM": [], "naive_bayes": [], "random_forest": [], "Decision_Tree": []}
+                res_percent = {"KNN": [], "SVM": [], "naive_bayes": [], "random_forest": [], "Decision_Tree": []}
                 while True:
                     mfcc = queue_dict['mfcc'].get(True)
                     print("Raw mfcc shape =", mfcc.shape)
@@ -170,16 +170,19 @@ def main():
             if CONFIG['error stat']:
                 i = 1
                 n = len(result_stat)
+                print(1)
+                plt.figure(1)
                 for classifier_name, graph in result_stat.items():
                     if 'all' in CONFIG['classifier'] or classifier_name in CONFIG['classifier']:
+                        print(classifier_name)
                         plt.subplot(2, n/2 + 1, i)
-                        plt.imshow(graph, cmap=plt.get_cmap('hot'))
+                        plt.imshow(graph)
                         plt.colorbar()
                         plt.title(classifier_name)
                         plt.xlabel("Expected")
                         plt.ylabel("Actual")
                         i += 1
-                plt.show()
+                plt.waitforbuttonpress()
             preprocessor_proc.terminate()
             del preprocessor
             exit()
